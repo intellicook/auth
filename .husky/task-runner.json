@@ -1,0 +1,11 @@
+{
+  "tasks": [
+    {
+      "name": "dotnet-verify-format-staged-files",
+      "group": "pre-commit-operations",
+      "command": "dotnet",
+      "args": ["format", "--verify-no-changes", "--include", "${staged}"],
+      "include": ["**/*.cs"]
+    }
+  ]
+}

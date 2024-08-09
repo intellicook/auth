@@ -1,0 +1,12 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "Checking formatting..."
+
+if dotnet husky run --name dotnet-verify-format-staged-files ; then
+  echo "Formatting is OK."
+  exit 0
+else
+  echo "Formatting is NOT OK. Please fix the formatting or run \`dotnet format\`, then stage the changes and try again."
+  exit 1
+fi

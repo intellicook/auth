@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelliCook.Auth.Host", "IntelliCook.Auth.Host\IntelliCook.Auth.Host.csproj", "{21056D70-2690-48AE-9F2B-2742832F7A70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelliCook.Auth.Infrastructure", "IntelliCook.Auth.Infrastructure\IntelliCook.Auth.Infrastructure.csproj", "{D2226297-0E1D-43A1-8DF7-1BE11735295F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelliCook.Auth.Host.E2ETests", "IntelliCook.Auth.Host.E2ETests\IntelliCook.Auth.Host.E2ETests.csproj", "{069B3D28-D6A0-4F8D-81C1-E87B2BA0CEEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelliCook.Auth.Host.UnitTests", "IntelliCook.Auth.Host.UnitTests\IntelliCook.Auth.Host.UnitTests.csproj", "{AB97F45A-796A-4027-BB88-7D674311CF09}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21056D70-2690-48AE-9F2B-2742832F7A70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21056D70-2690-48AE-9F2B-2742832F7A70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21056D70-2690-48AE-9F2B-2742832F7A70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21056D70-2690-48AE-9F2B-2742832F7A70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2226297-0E1D-43A1-8DF7-1BE11735295F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2226297-0E1D-43A1-8DF7-1BE11735295F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2226297-0E1D-43A1-8DF7-1BE11735295F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2226297-0E1D-43A1-8DF7-1BE11735295F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{069B3D28-D6A0-4F8D-81C1-E87B2BA0CEEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{069B3D28-D6A0-4F8D-81C1-E87B2BA0CEEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{069B3D28-D6A0-4F8D-81C1-E87B2BA0CEEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{069B3D28-D6A0-4F8D-81C1-E87B2BA0CEEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB97F45A-796A-4027-BB88-7D674311CF09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB97F45A-796A-4027-BB88-7D674311CF09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB97F45A-796A-4027-BB88-7D674311CF09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB97F45A-796A-4027-BB88-7D674311CF09}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
