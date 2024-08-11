@@ -17,7 +17,7 @@ public class HealthController(HealthCheckService healthCheckService) : Controlle
     [HttpGet]
     [ProducesResponseType(typeof(HealthGetResponseModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(HealthGetResponseModel), StatusCodes.Status503ServiceUnavailable)]
-    public async Task<ActionResult<HealthGetResponseModel>> Get()
+    public async Task<IActionResult> Get()
     {
         var report = await healthCheckService.CheckHealthAsync();
         var result = new HealthGetResponseModel

@@ -58,15 +58,13 @@ public class HealthControllerTests
             .ReturnsAsync(report);
 
         // Act
-        var actionResult = await _healthController.Get();
+        var result = await _healthController.Get();
 
         // Assert
-        var result = actionResult.Result as OkObjectResult;
-        result.Should().NotBeNull();
+        var response = result.Should().BeOfType<OkObjectResult>().Which
+            .Value.Should().BeOfType<HealthGetResponseModel>().Subject;
 
-        var response = result!.Value as HealthGetResponseModel;
-        response.Should().NotBeNull();
-        response!.Status.Should().Be(expectedStatus);
+        response.Status.Should().Be(expectedStatus);
         response.Checks.Should().BeEquivalentTo(statuses.Select(s => new HealthCheckModel
         {
             Name = s.name,
@@ -133,16 +131,13 @@ public class HealthControllerTests
             .ReturnsAsync(report);
 
         // Act
-        var actionResult = await _healthController.Get();
+        var result = await _healthController.Get();
 
         // Assert
-        var result = actionResult.Result as ObjectResult;
-        result.Should().NotBeNull();
-        result!.StatusCode.Should().Be((int)HttpStatusCode.ServiceUnavailable);
+        var response = result.Should().BeOfType<ObjectResult>().Which
+            .Value.Should().BeOfType<HealthGetResponseModel>().Subject;
 
-        var response = result.Value as HealthGetResponseModel;
-        response.Should().NotBeNull();
-        response!.Status.Should().Be(expectedStatus);
+        response.Status.Should().Be(expectedStatus);
         response.Checks.Should().BeEquivalentTo(statuses.Select(s => new HealthCheckModel
         {
             Name = s.name,

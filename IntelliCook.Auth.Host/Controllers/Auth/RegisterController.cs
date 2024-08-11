@@ -10,11 +10,26 @@ namespace IntelliCook.Auth.Host.Controllers.Auth;
 [Route("Auth/[controller]")]
 [ApiController]
 [AllowAnonymous]
-public class RegisterController(
-    UserManager<IntelliCookUser> userManager,
-    IUserStore<IntelliCookUser> userStore
-) : ControllerBase
+public class RegisterController : ControllerBase
 {
+    private readonly IUserEmailStore<IntelliCookUser> _userEmailStore;
+    private readonly UserManager<IntelliCookUser> _userManager;
+    private readonly IUserStore<IntelliCookUser> _userStore;
+
+    public RegisterController(UserManager<IntelliCookUser> userManager,
+        IUserStore<IntelliCookUser> userStore)
+    {
+        _userManager = userManager;
+        _userStore = userStore;
+
+        if (!userManager.SupportsUserEmail)
+        {
+            throw new NotSupportedException($"{nameof(RegisterController)} requires a user store with email support.");
+        }
+
+        _userEmailStore = (IUserEmailStore<IntelliCookUser>)userStore;
+    }
+
     /// <summary>
     ///     Registers a new user.
     /// </summary>
@@ -23,26 +38,15 @@ public class RegisterController(
     [ProducesResponseType(typeof(RegisterPostBadRequestResponseModel), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post(RegisterPostRequestModel request)
     {
-        var emailStore = (IUserEmailStore<IntelliCookUser>)userStore;
-        var email = request.Email;
-
-        var emailAddressAttribute = new EmailAddressAttribute();
-
         // Validation
         {
             var badRequestResponse = new RegisterPostBadRequestResponseModel();
-
-            if (!emailAddressAttribute.IsValid(email))
-            {
-                badRequestResponse.Email.Add(userManager.ErrorDescriber.InvalidEmail(email).Description);
-            }
 
             if (string.IsNullOrWhiteSpace(request.Name))
             {
                 badRequestResponse.Name.Add("Name cannot be empty.");
             }
-
-            if (request.Name.Length > 256)
+            else if (request.Name.Length > 256)
             {
                 badRequestResponse.Name.Add("Name cannot be longer than 256 characters.");
             }
@@ -51,8 +55,7 @@ public class RegisterController(
             {
                 badRequestResponse.Username.Add("Username cannot be empty.");
             }
-
-            if (request.Username.Length > 256)
+            else if (request.Username.Length > 256)
             {
                 badRequestResponse.Username.Add("Username cannot be longer than 256 characters.");
             }
@@ -61,15 +64,13 @@ public class RegisterController(
             {
                 badRequestResponse.Email.Add("Email cannot be empty.");
             }
-
-            if (request.Email.Length > 256)
+            else if (request.Email.Length > 256)
             {
                 badRequestResponse.Email.Add("Email cannot be longer than 256 characters.");
             }
-
-            if (string.IsNullOrWhiteSpace(request.Password))
+            else if (!new EmailAddressAttribute().IsValid(request.Email))
             {
-                badRequestResponse.Password.Add("Password cannot be empty.");
+                badRequestResponse.Email.Add(_userManager.ErrorDescriber.InvalidEmail(request.Email).Description);
             }
 
             if (badRequestResponse.Email.Any() || badRequestResponse.Name.Any() || badRequestResponse.Username.Any() ||
@@ -84,9 +85,9 @@ public class RegisterController(
         {
             Name = request.Name
         };
-        await userStore.SetUserNameAsync(user, request.Username, CancellationToken.None);
-        await emailStore.SetEmailAsync(user, email, CancellationToken.None);
-        var result = await userManager.CreateAsync(user, request.Password);
+        await _userStore.SetUserNameAsync(user, request.Username, CancellationToken.None);
+        await _userEmailStore.SetEmailAsync(user, request.Email, CancellationToken.None);
+        var result = await _userManager.CreateAsync(user, request.Password);
 
         if (!result.Succeeded)
         {
