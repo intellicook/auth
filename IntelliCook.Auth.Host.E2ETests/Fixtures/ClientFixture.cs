@@ -1,13 +1,12 @@
 using IntelliCook.Auth.Host.Options;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace IntelliCook.Auth.Host.E2ETests.Fixtures;
 
 public class ClientFixture : IDisposable
 {
-    public WebApplicationFactory<Program> Factory { get; }
-    public HttpClient Client { get; }
-
     public ClientFixture()
     {
         Environment.SetEnvironmentVariable(
@@ -19,8 +18,19 @@ public class ClientFixture : IDisposable
         Client = Factory.CreateClient();
     }
 
+    public WebApplicationFactory<Program> Factory { get; }
+    public HttpClient Client { get; }
+
+    public JsonSerializerOptions SerializerOptions { get; } = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() },
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+    };
+
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         Client.Dispose();
         Factory.Dispose();
     }

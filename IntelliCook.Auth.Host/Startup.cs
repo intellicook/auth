@@ -10,10 +10,6 @@ namespace IntelliCook.Auth.Host;
 
 public class Startup
 {
-    private IConfiguration Configuration { get; }
-    private ApiOptions ApiOptions { get; }
-    private DatabaseOptions DatabaseOptions { get; }
-
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
@@ -21,6 +17,10 @@ public class Startup
         ApiOptions = Configuration.GetAuthOptions<ApiOptions>();
         DatabaseOptions = Configuration.GetAuthOptions<DatabaseOptions>();
     }
+
+    private IConfiguration Configuration { get; }
+    private ApiOptions ApiOptions { get; }
+    private DatabaseOptions DatabaseOptions { get; }
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -45,6 +45,8 @@ public class Startup
             var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             o.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
+
+        services.AddAuthIdentity();
     }
 
     public void Configure(WebApplication app)
@@ -76,6 +78,8 @@ public class Startup
 
         app.UseHttpsRedirection();
         app.UseAuthorization();
+        // TODO: Remove this line after all controllers are implemented
+        // app.MapGroup("Identity").MapIdentityApi<IdentityUser>().WithTags(["Identity"]);
         app.MapControllers();
     }
 }
