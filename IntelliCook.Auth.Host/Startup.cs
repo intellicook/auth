@@ -16,37 +16,28 @@ public class Startup
 
         ApiOptions = Configuration.GetAuthOptions<ApiOptions>();
         DatabaseOptions = Configuration.GetAuthOptions<DatabaseOptions>();
+        JwtOptions = Configuration.GetAuthOptions<JwtOptions>();
     }
 
     private IConfiguration Configuration { get; }
     private ApiOptions ApiOptions { get; }
     private DatabaseOptions DatabaseOptions { get; }
+    private JwtOptions JwtOptions { get; }
 
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddAuthOptions<DatabaseOptions>(Configuration);
         services.AddAuthOptions<ApiOptions>(Configuration);
+        services.AddAuthOptions<JwtOptions>(Configuration);
         services.AddAuthContext(DatabaseOptions);
         services.AddHealthChecks()
             .AddAuthChecks(DatabaseOptions);
         services.AddDatabaseDeveloperPageExceptionFilter();
         services.AddControllers(o => o.Filters.Add(new ProducesAttribute("application/json")))
             .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(o =>
-        {
-            o.SwaggerDoc(ApiOptions.VersionString, new OpenApiInfo
-            {
-                Version = ApiOptions.VersionString,
-                Title = ApiOptions.Title,
-                Description = ApiOptions.Description
-            });
-
-            var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            o.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-        });
-
+        services.AddAuthSwagger(ApiOptions);
         services.AddAuthIdentity();
+        services.AddAuthJwtAuthentication(JwtOptions);
     }
 
     public void Configure(WebApplication app)
@@ -67,6 +58,7 @@ public class Startup
             app.UseSwaggerUI(o =>
             {
                 o.SwaggerEndpoint($"/swagger/{ApiOptions.VersionString}/swagger.json", ApiOptions.VersionString);
+                o.EnablePersistAuthorization();
             });
             app.UseDeveloperExceptionPage();
         }
@@ -77,6 +69,7 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
+        app.UseAuthentication();
         app.UseAuthorization();
         // TODO: Remove this line after all controllers are implemented
         // app.MapGroup("Identity").MapIdentityApi<IdentityUser>().WithTags(["Identity"]);
