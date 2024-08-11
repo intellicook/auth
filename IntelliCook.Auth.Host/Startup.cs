@@ -1,6 +1,7 @@
 using IntelliCook.Auth.Host.Extensions;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Contexts;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
@@ -45,6 +46,8 @@ public class Startup
             var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             o.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
         });
+
+        services.AddAuthIdentity();
     }
 
     public void Configure(WebApplication app)
@@ -76,6 +79,7 @@ public class Startup
 
         app.UseHttpsRedirection();
         app.UseAuthorization();
+        app.MapGroup("Identity").MapIdentityApi<IdentityUser>().WithTags(["Identity"]);
         app.MapControllers();
     }
 }
