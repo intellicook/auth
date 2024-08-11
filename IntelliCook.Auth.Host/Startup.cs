@@ -1,7 +1,6 @@
 using IntelliCook.Auth.Host.Extensions;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Contexts;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
@@ -11,10 +10,6 @@ namespace IntelliCook.Auth.Host;
 
 public class Startup
 {
-    private IConfiguration Configuration { get; }
-    private ApiOptions ApiOptions { get; }
-    private DatabaseOptions DatabaseOptions { get; }
-
     public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
@@ -22,6 +17,10 @@ public class Startup
         ApiOptions = Configuration.GetAuthOptions<ApiOptions>();
         DatabaseOptions = Configuration.GetAuthOptions<DatabaseOptions>();
     }
+
+    private IConfiguration Configuration { get; }
+    private ApiOptions ApiOptions { get; }
+    private DatabaseOptions DatabaseOptions { get; }
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -79,7 +78,8 @@ public class Startup
 
         app.UseHttpsRedirection();
         app.UseAuthorization();
-        app.MapGroup("Identity").MapIdentityApi<IdentityUser>().WithTags(["Identity"]);
+        // TODO: Remove this line after all controllers are implemented
+        // app.MapGroup("Identity").MapIdentityApi<IdentityUser>().WithTags(["Identity"]);
         app.MapControllers();
     }
 }

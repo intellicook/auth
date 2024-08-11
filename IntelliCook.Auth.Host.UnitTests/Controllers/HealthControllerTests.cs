@@ -4,7 +4,6 @@ using IntelliCook.Auth.Host.Models.Health;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Moq;
-using System.Net;
 
 namespace IntelliCook.Auth.Host.UnitTests.Controllers;
 

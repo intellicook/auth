@@ -85,145 +85,8 @@ public class RegisterControllerTests
         ), Times.Once);
     }
 
-    public static IEnumerable<object[]> Post_InvalidName_ReturnsBadRequest_TestData()
-    {
-        yield return
-        [
-            "",
-            new List<string> { "Name cannot be empty." }
-        ];
-        yield return
-        [
-            new string('a', 257),
-            new List<string> { "Name cannot be longer than 256 characters." }
-        ];
-    }
-
-    [Theory]
-    [MemberData(nameof(Post_InvalidName_ReturnsBadRequest_TestData))]
-    public async void Post_InvalidName_ReturnsBadRequest(
-        string name,
-        IList<string> expectedErrors
-    )
-    {
-        // Arrange
-        var request = new RegisterPostRequestModel
-        {
-            Name = name,
-            Username = "Username",
-            Email = "Email@Email.com",
-            Password = "Password"
-        };
-
-        // Act
-        var result = await _registerController.Post(request);
-
-        // Assert
-        result.Should().BeOfType<BadRequestObjectResult>().Which
-            .Value.Should().BeOfType<RegisterPostBadRequestResponseModel>().Which
-            .Name.Should().BeEquivalentTo(expectedErrors);
-
-        _userManagerMock.Verify(m => m.CreateAsync(
-            It.IsAny<IntelliCookUser>(),
-            It.IsAny<string>()
-        ), Times.Never);
-    }
-
-    public static IEnumerable<object[]> Post_InvalidUsername_ReturnsBadRequest_TestData()
-    {
-        yield return
-        [
-            "",
-            new List<string> { "Username cannot be empty." }
-        ];
-        yield return
-        [
-            new string('a', 257),
-            new List<string> { "Username cannot be longer than 256 characters." }
-        ];
-    }
-
-    [Theory]
-    [MemberData(nameof(Post_InvalidUsername_ReturnsBadRequest_TestData))]
-    public async void Post_InvalidUsername_ReturnsBadRequest(
-        string username,
-        IList<string> expectedErrors
-    )
-    {
-        // Arrange
-        var request = new RegisterPostRequestModel
-        {
-            Name = "Name",
-            Username = username,
-            Email = "Email@Email.com",
-            Password = "Password"
-        };
-
-        // Act
-        var result = await _registerController.Post(request);
-
-        // Assert
-        result.Should().BeOfType<BadRequestObjectResult>().Which
-            .Value.Should().BeOfType<RegisterPostBadRequestResponseModel>().Which
-            .Username.Should().BeEquivalentTo(expectedErrors);
-
-        _userManagerMock.Verify(m => m.CreateAsync(
-            It.IsAny<IntelliCookUser>(),
-            It.IsAny<string>()
-        ), Times.Never);
-    }
-
-    public static IEnumerable<object[]> Post_InvalidEmail_ReturnsBadRequest_TestData()
-    {
-        yield return
-        [
-            "",
-            new List<string> { "Email cannot be empty." }
-        ];
-        yield return
-        [
-            new string('a', 257),
-            new List<string> { "Email cannot be longer than 256 characters." }
-        ];
-        yield return
-        [
-            "invalid",
-            new List<string> { new IdentityErrorDescriber().InvalidEmail("invalid").Description }
-        ];
-    }
-
-    [Theory]
-    [MemberData(nameof(Post_InvalidEmail_ReturnsBadRequest_TestData))]
-    public async void Post_InvalidEmail_ReturnsBadRequest(
-        string email,
-        IList<string> expectedErrors
-    )
-    {
-        // Arrange
-        var request = new RegisterPostRequestModel
-        {
-            Name = "Name",
-            Username = "Username",
-            Email = email,
-            Password = "Password"
-        };
-
-        // Act
-        var result = await _registerController.Post(request);
-
-        // Assert
-        result.Should().BeOfType<BadRequestObjectResult>().Which
-            .Value.Should().BeOfType<RegisterPostBadRequestResponseModel>().Which
-            .Email.Should().BeEquivalentTo(expectedErrors);
-
-        _userManagerMock.Verify(m => m.CreateAsync(
-            It.IsAny<IntelliCookUser>(),
-            It.IsAny<string>()
-        ), Times.Never);
-    }
-
     [Fact]
-    public async void Post_UserManagerCreateAsyncFails_ReturnsBadRequest()
+    public async void Post_DuplicateEmail_ReturnsValidationProblemDetails()
     {
         // Arrange
         var request = new RegisterPostRequestModel
@@ -240,23 +103,55 @@ public class RegisterControllerTests
                 It.IsAny<string>()
             ))
             .ReturnsAsync(IdentityResult.Failed(
-                new IdentityError { Code = "Name", Description = "Name Error" },
-                new IdentityError { Code = "UserName", Description = "Username Error" },
-                new IdentityError { Code = "Email", Description = "Email Error" },
-                new IdentityError { Code = "Password", Description = "Password Error" }
+                new IdentityError { Code = "DuplicateEmail", Description = "Email Error" }
             ));
 
         // Act
         var result = await _registerController.Post(request);
 
         // Assert
-        var response = result.Should().BeOfType<BadRequestObjectResult>().Which
-            .Value.Should().BeOfType<RegisterPostBadRequestResponseModel>().Subject;
+        var response = result.Should().BeOfType<ObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>().Subject;
 
-        response.Name.Should().BeEquivalentTo("Name Error");
-        response.Username.Should().BeEquivalentTo("Username Error");
-        response.Email.Should().BeEquivalentTo("Email Error");
-        response.Password.Should().BeEquivalentTo("Password Error");
+        response.Errors.Should().ContainKey(nameof(request.Email));
+        response.Errors[nameof(request.Email)].Should().Contain("Email is already taken.");
+
+        _userManagerMock.Verify(m => m.CreateAsync(
+            It.IsAny<IntelliCookUser>(),
+            It.IsAny<string>()
+        ), Times.Once);
+    }
+
+    [Fact]
+    public async void Post_DuplicateUsername_ReturnsValidationProblemDetails()
+    {
+        // Arrange
+        var request = new RegisterPostRequestModel
+        {
+            Name = "Name",
+            Username = "Username",
+            Email = "Email@Email.com",
+            Password = "Password"
+        };
+
+        _userManagerMock
+            .Setup(m => m.CreateAsync(
+                It.IsAny<IntelliCookUser>(),
+                It.IsAny<string>()
+            ))
+            .ReturnsAsync(IdentityResult.Failed(
+                new IdentityError { Code = "DuplicateUserName", Description = "Username Error" }
+            ));
+
+        // Act
+        var result = await _registerController.Post(request);
+
+        // Assert
+        var response = result.Should().BeOfType<ObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>().Subject;
+
+        response.Errors.Should().ContainKey(nameof(request.Username));
+        response.Errors[nameof(request.Username)].Should().Contain("Username is already taken.");
 
         _userManagerMock.Verify(m => m.CreateAsync(
             It.IsAny<IntelliCookUser>(),

@@ -35,52 +35,9 @@ public class RegisterController : ControllerBase
     /// </summary>
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(RegisterPostBadRequestResponseModel), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post(RegisterPostRequestModel request)
     {
-        // Validation
-        {
-            var badRequestResponse = new RegisterPostBadRequestResponseModel();
-
-            if (string.IsNullOrWhiteSpace(request.Name))
-            {
-                badRequestResponse.Name.Add("Name cannot be empty.");
-            }
-            else if (request.Name.Length > 256)
-            {
-                badRequestResponse.Name.Add("Name cannot be longer than 256 characters.");
-            }
-
-            if (string.IsNullOrWhiteSpace(request.Username))
-            {
-                badRequestResponse.Username.Add("Username cannot be empty.");
-            }
-            else if (request.Username.Length > 256)
-            {
-                badRequestResponse.Username.Add("Username cannot be longer than 256 characters.");
-            }
-
-            if (string.IsNullOrWhiteSpace(request.Email))
-            {
-                badRequestResponse.Email.Add("Email cannot be empty.");
-            }
-            else if (request.Email.Length > 256)
-            {
-                badRequestResponse.Email.Add("Email cannot be longer than 256 characters.");
-            }
-            else if (!new EmailAddressAttribute().IsValid(request.Email))
-            {
-                badRequestResponse.Email.Add(_userManager.ErrorDescriber.InvalidEmail(request.Email).Description);
-            }
-
-            if (badRequestResponse.Email.Any() || badRequestResponse.Name.Any() || badRequestResponse.Username.Any() ||
-                badRequestResponse.Password.Any())
-            {
-                return BadRequest(badRequestResponse);
-            }
-        }
-
-        // Try to create the user
         var user = new IntelliCookUser
         {
             Name = request.Name
@@ -89,25 +46,26 @@ public class RegisterController : ControllerBase
         await _userEmailStore.SetEmailAsync(user, request.Email, CancellationToken.None);
         var result = await _userManager.CreateAsync(user, request.Password);
 
-        if (!result.Succeeded)
+        if (result.Succeeded)
         {
-            return BadRequest(result.Errors.Aggregate(new RegisterPostBadRequestResponseModel(), (response, e) =>
-            {
-                var errorType = e.Code switch
-                {
-                    var code when code.Contains("Password") => response.Password,
-                    var code when code.Contains("UserName") => response.Username,
-                    var code when code.Contains("Email") => response.Email,
-                    var code when code.Contains("Name") => response.Name,
-                    _ => throw new ArgumentOutOfRangeException(nameof(e), e, null)
-                };
-
-                errorType.Add(e.Description);
-
-                return response;
-            }));
+            return CreatedAtAction(null, null);
         }
 
-        return CreatedAtAction(null, null);
+        if (result.Errors.Any(e => e.Code == "DuplicateUserName"))
+        {
+            ModelState.AddModelError(nameof(request.Username), "Username is already taken.");
+        }
+
+        if (result.Errors.Any(e => e.Code == "DuplicateEmail"))
+        {
+            ModelState.AddModelError(nameof(request.Email), "Email is already taken.");
+        }
+
+        foreach (var error in result.Errors.Where(e => e.Code != "DuplicateUserName" && e.Code != "DuplicateEmail"))
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+
+        return ValidationProblem(ModelState);
     }
 }
