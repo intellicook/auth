@@ -1,6 +1,6 @@
 using FluentAssertions;
+using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Host.Controllers.Auth;
-using IntelliCook.Auth.Host.Models.Auth.Login;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;

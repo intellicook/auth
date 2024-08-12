@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\IntelliCook.Auth.Contract\IntelliCook.Auth.Contract.csproj" />
         <ProjectReference Include="..\IntelliCook.Auth.Infrastructure\IntelliCook.Auth.Infrastructure.csproj"/>
     </ItemGroup>
 

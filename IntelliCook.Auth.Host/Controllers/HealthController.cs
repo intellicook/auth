@@ -1,4 +1,5 @@
-using IntelliCook.Auth.Host.Models.Health;
+using IntelliCook.Auth.Contract.Health;
+using IntelliCook.Auth.Host.Extensions.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;

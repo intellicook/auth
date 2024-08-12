@@ -1,6 +1,7 @@
 using FluentAssertions;
+using IntelliCook.Auth.Contract.Health;
 using IntelliCook.Auth.Host.Controllers;
-using IntelliCook.Auth.Host.Models.Health;
+using IntelliCook.Auth.Host.Extensions.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Moq;

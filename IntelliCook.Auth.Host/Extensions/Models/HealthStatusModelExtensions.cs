@@ -1,13 +1,7 @@
+using IntelliCook.Auth.Contract.Health;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace IntelliCook.Auth.Host.Models.Health;
-
-public enum HealthStatusModel
-{
-    Healthy,
-    Degraded,
-    Unhealthy
-}
+namespace IntelliCook.Auth.Host.Extensions.Models;
 
 public static class HealthStatusModelExtensions
 {

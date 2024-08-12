@@ -1,6 +1,6 @@
 using FluentAssertions;
+using IntelliCook.Auth.Contract.Auth.Register;
 using IntelliCook.Auth.Host.E2ETests.Fixtures;
-using IntelliCook.Auth.Host.Models.Auth.Register;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Net.Http.Json;
