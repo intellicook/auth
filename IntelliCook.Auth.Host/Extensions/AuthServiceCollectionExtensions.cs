@@ -17,7 +17,7 @@ public static class AuthServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         IConfiguration configuration
     ) where
-        TOptions : class, IOptionsBase
+        TOptions : class, IAuthOptions
     {
         return serviceCollection.Configure<TOptions>(configuration.GetValidatedSection<TOptions>());
     }

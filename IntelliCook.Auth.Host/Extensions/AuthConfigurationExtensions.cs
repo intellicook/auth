@@ -5,7 +5,7 @@ namespace IntelliCook.Auth.Host.Extensions;
 public static class AuthConfigurationExtensions
 {
     public static IConfigurationSection GetValidatedSection<TOptions>(this IConfiguration configuration)
-        where TOptions : IOptionsBase
+        where TOptions : IAuthOptions
     {
         var section = configuration.GetSection(TOptions.SectionKey);
 
@@ -30,7 +30,7 @@ public static class AuthConfigurationExtensions
     }
 
     public static TOptions GetAuthOptions<TOptions>(this IConfiguration configuration)
-        where TOptions : IOptionsBase
+        where TOptions : IAuthOptions
     {
         return configuration.GetValidatedSection<TOptions>().Get<TOptions>()!;
     }

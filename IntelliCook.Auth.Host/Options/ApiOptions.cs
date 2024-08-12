@@ -1,6 +1,6 @@
 namespace IntelliCook.Auth.Host.Options;
 
-public class ApiOptions : IOptionsBase
+public class ApiOptions : IAuthOptions
 {
     public static string SectionKey => "Api";
 

@@ -1,6 +1,6 @@
 namespace IntelliCook.Auth.Host.Options;
 
-public class JwtOptions : IOptionsBase
+public class JwtOptions : IAuthOptions
 {
     public static string SectionKey => "Jwt";
 
