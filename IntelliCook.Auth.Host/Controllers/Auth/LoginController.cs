@@ -12,6 +12,7 @@ using System.Text;
 
 namespace IntelliCook.Auth.Host.Controllers.Auth;
 
+[Tags("Auth")]
 [Route("Auth/[controller]")]
 [ApiController]
 [AllowAnonymous]
@@ -22,7 +23,7 @@ public class LoginController(UserManager<IntelliCookUser> userManager, IOptions<
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(LoginPostResponseModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Post(LoginPostRequestModel request)
     {
         var user = await userManager.FindByNameAsync(request.Username);
@@ -34,14 +35,9 @@ public class LoginController(UserManager<IntelliCookUser> userManager, IOptions<
         var claims = new List<Claim>
         {
             new(ClaimTypes.Name, user.UserName),
+            new(ClaimTypes.Role, user.Role.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
-
-        if (userManager.SupportsUserRole)
-        {
-            var userRoles = await userManager.GetRolesAsync(user);
-            claims.AddRange(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
-        }
 
         var token = CreateToken(claims);
 

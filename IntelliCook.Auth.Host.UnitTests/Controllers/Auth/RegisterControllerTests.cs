@@ -1,5 +1,6 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.Auth.Register;
+using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.Controllers.Auth;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
@@ -79,7 +80,8 @@ public class RegisterControllerTests
             It.Is<IntelliCookUser>(user =>
                 user.Name == request.Name &&
                 user.UserName == request.Username &&
-                user.Email == request.Email
+                user.Email == request.Email &&
+                user.Role == UserRoleModel.None
             ),
             request.Password
         ), Times.Once);
@@ -110,7 +112,7 @@ public class RegisterControllerTests
         var result = await _registerController.Post(request);
 
         // Assert
-        var response = result.Should().BeOfType<ObjectResult>().Which
+        var response = result.Should().BeOfType<BadRequestObjectResult>().Which
             .Value.Should().BeOfType<ValidationProblemDetails>().Subject;
 
         response.Errors.Should().ContainKey(nameof(request.Email));
@@ -147,7 +149,7 @@ public class RegisterControllerTests
         var result = await _registerController.Post(request);
 
         // Assert
-        var response = result.Should().BeOfType<ObjectResult>().Which
+        var response = result.Should().BeOfType<BadRequestObjectResult>().Which
             .Value.Should().BeOfType<ValidationProblemDetails>().Subject;
 
         response.Errors.Should().ContainKey(nameof(request.Username));

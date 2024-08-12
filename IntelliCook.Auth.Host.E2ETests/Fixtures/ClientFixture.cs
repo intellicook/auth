@@ -1,4 +1,6 @@
+using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Contract.Auth.Register;
+using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -24,9 +26,10 @@ public class ClientFixture : IDisposable
     public IntelliCookUser DefaultUser { get; } = new()
     {
         Name = "Default Name",
+        Role = UserRoleModel.None,
         UserName = "Default_Username",
         Email = "Default.Email@Email.com",
-        PasswordHash = "Default Password Hash",
+        PasswordHash = "Default Password Hash"
     };
 
     public string DefaultUserPassword { get; } = "Default Password 1234";
@@ -71,6 +74,23 @@ public class ClientFixture : IDisposable
         var response = await Client.PostAsJsonAsync("/Auth/Register", request, SerializerOptions);
 
         response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<string> GetToken(string? username = null, string? password = null)
+    {
+        var request = new LoginPostRequestModel
+        {
+            Username = username ?? DefaultUser.UserName,
+            Password = password ?? DefaultUserPassword
+        };
+
+        var response = await Client.PostAsJsonAsync("/Auth/Login", request, SerializerOptions);
+
+        response.EnsureSuccessStatusCode();
+        var content = await response.Content.ReadAsStringAsync();
+        var token = JsonSerializer.Deserialize<LoginPostResponseModel>(content, SerializerOptions)?.AccessToken;
+
+        return token ?? throw new InvalidOperationException("Failed to get token.");
     }
 }
 
