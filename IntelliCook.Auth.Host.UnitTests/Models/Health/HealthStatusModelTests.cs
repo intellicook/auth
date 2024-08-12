@@ -1,5 +1,6 @@
 using FluentAssertions;
-using IntelliCook.Auth.Host.Models.Health;
+using IntelliCook.Auth.Contract.Health;
+using IntelliCook.Auth.Host.Extensions.Models;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace IntelliCook.Auth.Host.UnitTests.Models.Health;

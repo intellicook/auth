@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace IntelliCook.Auth.Host.Models.Auth.Register;
+namespace IntelliCook.Auth.Contract.Auth.Register;
 
 public class RegisterPostRequestModel
 {

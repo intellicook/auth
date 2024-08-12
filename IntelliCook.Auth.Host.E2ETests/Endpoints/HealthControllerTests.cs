@@ -1,6 +1,7 @@
 using FluentAssertions;
+using IntelliCook.Auth.Contract.Health;
 using IntelliCook.Auth.Host.E2ETests.Fixtures;
-using IntelliCook.Auth.Host.Models.Health;
+using IntelliCook.Auth.Host.Extensions.Models;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;

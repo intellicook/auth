@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace IntelliCook.Auth.Host.Models.Health;
+namespace IntelliCook.Auth.Contract.Health;
 
 public class HealthGetResponseModel
 {

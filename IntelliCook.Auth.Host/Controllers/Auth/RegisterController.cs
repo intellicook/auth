@@ -1,9 +1,8 @@
-using IntelliCook.Auth.Host.Models.Auth.Register;
+using IntelliCook.Auth.Contract.Auth.Register;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace IntelliCook.Auth.Host.Controllers.Auth;
 

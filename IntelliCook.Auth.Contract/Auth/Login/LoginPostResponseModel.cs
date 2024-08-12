@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace IntelliCook.Auth.Host.Models.Auth.Login;
+namespace IntelliCook.Auth.Contract.Auth.Login;
 
 public class LoginPostResponseModel
 {
