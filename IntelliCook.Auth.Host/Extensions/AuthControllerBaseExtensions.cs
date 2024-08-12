@@ -13,22 +13,26 @@ public static class AuthControllerBaseExtensions
         string? instance = null
     )
     {
-        return controller.ProblemDetailsFactory?.CreateValidationProblemDetails(
-            controller.HttpContext,
-            controller.ModelState,
-            statusCode,
-            title,
-            type,
-            detail,
-            instance
-        ) ?? new ValidationProblemDetails(controller.ModelState)
+        if (controller.ProblemDetailsFactory != null)
         {
-            Status = statusCode,
-            Title = title,
-            Type = type,
-            Detail = detail,
-            Instance = instance
-        };
+            return controller.ProblemDetailsFactory.CreateValidationProblemDetails(
+                controller.HttpContext,
+                controller.ModelState,
+                statusCode,
+                title,
+                type,
+                detail,
+                instance
+            );
+        }
+
+        var problemDetails = new ValidationProblemDetails(controller.ModelState);
+        problemDetails.Status = statusCode ?? problemDetails.Status;
+        problemDetails.Title = title ?? problemDetails.Title;
+        problemDetails.Type = type ?? problemDetails.Type;
+        problemDetails.Detail = detail ?? problemDetails.Detail;
+        problemDetails.Instance = instance ?? problemDetails.Instance;
+        return problemDetails;
     }
 
     public static ProblemDetails CreateProblemDetails(
@@ -40,14 +44,19 @@ public static class AuthControllerBaseExtensions
         string? instance = null
     )
     {
-        return controller.ProblemDetailsFactory?.CreateProblemDetails(
-            controller.HttpContext,
-            statusCode,
-            title,
-            type,
-            detail,
-            instance
-        ) ?? new ProblemDetails
+        if (controller.ProblemDetailsFactory != null)
+        {
+            return controller.ProblemDetailsFactory.CreateProblemDetails(
+                controller.HttpContext,
+                statusCode,
+                title,
+                type,
+                detail,
+                instance
+            );
+        }
+
+        var problemDetails = new ProblemDetails
         {
             Status = statusCode,
             Title = title,
@@ -55,5 +64,6 @@ public static class AuthControllerBaseExtensions
             Detail = detail,
             Instance = instance
         };
+        return problemDetails;
     }
 }

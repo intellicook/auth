@@ -19,7 +19,7 @@ public class UserController(UserManager<IntelliCookUser> userManager) : Controll
     [HttpGet]
     [ProducesResponseType(typeof(UserGetResponseModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Get()
     {
         var name = User.Claims

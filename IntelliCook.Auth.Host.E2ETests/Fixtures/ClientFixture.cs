@@ -26,7 +26,7 @@ public class ClientFixture : IDisposable
     public IntelliCookUser DefaultUser { get; } = new()
     {
         Name = "Default Name",
-        Role = UserRoleModel.Admin,
+        Role = UserRoleModel.None,
         UserName = "Default_Username",
         Email = "Default.Email@Email.com",
         PasswordHash = "Default Password Hash"
