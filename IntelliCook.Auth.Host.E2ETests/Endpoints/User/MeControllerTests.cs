@@ -4,12 +4,12 @@ using IntelliCook.Auth.Host.E2ETests.Fixtures;
 using System.Net;
 using System.Text.Json;
 
-namespace IntelliCook.Auth.Host.E2ETests.Endpoints;
+namespace IntelliCook.Auth.Host.E2ETests.Endpoints.User;
 
 [Collection(nameof(ClientFixture))]
-public class UserControllerTests(ClientFixture fixture)
+public class MeControllerTests(ClientFixture fixture)
 {
-    private const string Path = "/User";
+    private const string Path = "/User/Me";
 
     #region Get
 

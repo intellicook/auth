@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace IntelliCook.Auth.Host.Controllers;
+namespace IntelliCook.Auth.Host.Controllers.User;
 
-[Route("[controller]")]
+[Tags("User")]
+[Route("User/[controller]")]
 [ApiController]
 [Authorize]
-public class UserController(UserManager<IntelliCookUser> userManager) : ControllerBase
+public class MeController(UserManager<IntelliCookUser> userManager) : ControllerBase
 {
     /// <summary>
     ///     Gets the current user.

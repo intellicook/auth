@@ -1,6 +1,6 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.User;
-using IntelliCook.Auth.Host.Controllers;
+using IntelliCook.Auth.Host.Controllers.User;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Security.Claims;
 
-namespace IntelliCook.Auth.Host.UnitTests.Controllers;
+namespace IntelliCook.Auth.Host.UnitTests.Controllers.User;
 
-public class UserControllerTests
+public class MeControllerTests
 {
-    private readonly UserController _userController;
+    private readonly MeController _meController;
     private readonly Mock<HttpContext> _httpContextMock = new();
     private readonly Mock<UserManager<IntelliCookUser>> _userManagerMock;
 
@@ -25,7 +25,7 @@ public class UserControllerTests
         PasswordHash = "Password Hash"
     };
 
-    public UserControllerTests()
+    public MeControllerTests()
     {
         _userManagerMock = new Mock<UserManager<IntelliCookUser>>(
             Mock.Of<IUserStore<IntelliCookUser>>(),
@@ -38,7 +38,7 @@ public class UserControllerTests
             null,
             null
         );
-        _userController = new UserController(_userManagerMock.Object)
+        _meController = new MeController(_userManagerMock.Object)
         {
             ControllerContext = new ControllerContext
             {
@@ -65,7 +65,7 @@ public class UserControllerTests
             .ReturnsAsync(_user);
 
         // Act
-        var result = await _userController.Get();
+        var result = await _meController.Get();
 
         // Assert
         result.Should().BeOfType<OkObjectResult>().Which
@@ -91,7 +91,7 @@ public class UserControllerTests
             });
 
         // Act
-        var result = await _userController.Get();
+        var result = await _meController.Get();
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>().Which
@@ -112,7 +112,7 @@ public class UserControllerTests
             });
 
         // Act
-        var result = await _userController.Get();
+        var result = await _meController.Get();
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>().Which
@@ -137,7 +137,7 @@ public class UserControllerTests
             .ReturnsAsync(null as IntelliCookUser);
 
         // Act
-        var result = await _userController.Get();
+        var result = await _meController.Get();
 
         // Assert
         result.Should().BeOfType<NotFoundObjectResult>();
