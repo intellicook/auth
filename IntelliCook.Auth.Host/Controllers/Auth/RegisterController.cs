@@ -1,5 +1,6 @@
 using IntelliCook.Auth.Contract.Auth.Register;
 using IntelliCook.Auth.Contract.User;
+using IntelliCook.Auth.Host.Extensions;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -68,6 +69,6 @@ public class RegisterController : ControllerBase
             ModelState.AddModelError(string.Empty, error.Description);
         }
 
-        return BadRequest(new ValidationProblemDetails(ModelState));
+        return BadRequest(this.CreateValidationProblemDetails());
     }
 }

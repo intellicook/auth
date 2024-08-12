@@ -1,4 +1,5 @@
 using IntelliCook.Auth.Contract.User;
+using IntelliCook.Auth.Host.Extensions;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -18,7 +19,7 @@ public class UserController(UserManager<IntelliCookUser> userManager) : Controll
     [HttpGet]
     [ProducesResponseType(typeof(UserGetResponseModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Get()
     {
         var name = User.Claims
@@ -41,7 +42,7 @@ public class UserController(UserManager<IntelliCookUser> userManager) : Controll
 
         if (name == null || role == null)
         {
-            return BadRequest(new ValidationProblemDetails(ModelState));
+            return BadRequest(this.CreateValidationProblemDetails());
         }
 
         var user = await userManager.FindByNameAsync(name);
@@ -57,7 +58,10 @@ public class UserController(UserManager<IntelliCookUser> userManager) : Controll
             });
         }
 
-        ModelState.AddModelError(nameof(ClaimTypes.Name), "Invalid token with no user found.");
-        return BadRequest(new ValidationProblemDetails(ModelState));
+        return NotFound(this.CreateProblemDetails(
+            StatusCodes.Status404NotFound,
+            "User not found",
+            detail: "Invalid token with no user found."
+        ));
     }
 }
