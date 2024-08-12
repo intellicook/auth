@@ -1,4 +1,5 @@
 using IntelliCook.Auth.Contract.Auth.Register;
+using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -24,6 +25,7 @@ public class ClientFixture : IDisposable
     public IntelliCookUser DefaultUser { get; } = new()
     {
         Name = "Default Name",
+        Role = UserRoleModel.Admin,
         UserName = "Default_Username",
         Email = "Default.Email@Email.com",
         PasswordHash = "Default Password Hash",

@@ -1,3 +1,4 @@
+using IntelliCook.Auth.Contract.User;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
@@ -7,6 +8,8 @@ public class IntelliCookUser : IdentityUser
 {
     [MaxLength(256)]
     public string Name { get; set; }
+
+    public UserRoleModel Role { get; set; }
 
     public override string UserName { get; set; }
 

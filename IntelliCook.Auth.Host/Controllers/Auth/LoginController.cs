@@ -12,6 +12,7 @@ using System.Text;
 
 namespace IntelliCook.Auth.Host.Controllers.Auth;
 
+[Tags("Auth")]
 [Route("Auth/[controller]")]
 [ApiController]
 [AllowAnonymous]
@@ -34,14 +35,9 @@ public class LoginController(UserManager<IntelliCookUser> userManager, IOptions<
         var claims = new List<Claim>
         {
             new(ClaimTypes.Name, user.UserName),
+            new(ClaimTypes.Role, user.Role.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
-
-        if (userManager.SupportsUserRole)
-        {
-            var userRoles = await userManager.GetRolesAsync(user);
-            claims.AddRange(userRoles.Select(userRole => new Claim(ClaimTypes.Role, userRole)));
-        }
 
         var token = CreateToken(claims);
 

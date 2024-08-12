@@ -1,4 +1,5 @@
 using IntelliCook.Auth.Contract.Auth.Register;
+using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IntelliCook.Auth.Host.Controllers.Auth;
 
+[Tags("Auth")]
 [Route("Auth/[controller]")]
 [ApiController]
 [AllowAnonymous]
@@ -39,7 +41,8 @@ public class RegisterController : ControllerBase
     {
         var user = new IntelliCookUser
         {
-            Name = request.Name
+            Name = request.Name,
+            Role = UserRoleModel.None
         };
         await _userStore.SetUserNameAsync(user, request.Username, CancellationToken.None);
         await _userEmailStore.SetEmailAsync(user, request.Email, CancellationToken.None);
@@ -65,6 +68,6 @@ public class RegisterController : ControllerBase
             ModelState.AddModelError(string.Empty, error.Description);
         }
 
-        return ValidationProblem(ModelState);
+        return BadRequest(new ValidationProblemDetails(ModelState));
     }
 }

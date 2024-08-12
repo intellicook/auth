@@ -1,3 +1,4 @@
+using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -5,8 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace IntelliCook.Auth.Host.Controllers;
-
-// TODO: Remove this controller and replace with actual implementation.
 
 [Route("[controller]")]
 [ApiController]
@@ -17,6 +16,9 @@ public class UserController(UserManager<IntelliCookUser> userManager) : Controll
     ///     Gets the current user.
     /// </summary>
     [HttpGet]
+    [ProducesResponseType(typeof(UserGetResponseModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Get()
     {
         var name = User.Claims
@@ -25,15 +27,37 @@ public class UserController(UserManager<IntelliCookUser> userManager) : Controll
 
         if (name == null)
         {
-            return Unauthorized();
+            ModelState.AddModelError(nameof(ClaimTypes.Name), "Invalid token with no name is given.");
+        }
+
+        var role = User.Claims
+            .SingleOrDefault(c => c.Type == ClaimTypes.Role)?
+            .Value;
+
+        if (role == null)
+        {
+            ModelState.AddModelError(nameof(ClaimTypes.Role), "Invalid token with no role is given.");
+        }
+
+        if (name == null || role == null)
+        {
+            return BadRequest(new ValidationProblemDetails(ModelState));
         }
 
         var user = await userManager.FindByNameAsync(name);
-        return Ok(new
+
+        if (user != null)
         {
-            Name = user?.Name,
-            Email = user?.Email,
-            Username = user?.UserName
-        });
+            return Ok(new UserGetResponseModel()
+            {
+                Name = user.Name,
+                Role = user.Role,
+                Username = user.UserName,
+                Email = user.Email
+            });
+        }
+
+        ModelState.AddModelError(nameof(ClaimTypes.Name), "Invalid token with no user found.");
+        return BadRequest(new ValidationProblemDetails(ModelState));
     }
 }

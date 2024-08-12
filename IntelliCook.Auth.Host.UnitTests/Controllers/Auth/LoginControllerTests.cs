@@ -1,5 +1,6 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.Auth.Login;
+using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.Controllers.Auth;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Models;
@@ -22,15 +23,11 @@ public class LoginControllerTests
         Issuer = "Issuer",
         Audience = "Audience"
     });
-    private readonly IList<string> _roles = new List<string>()
-    {
-        "Role 1",
-        "Role 2"
-    };
 
     private readonly IntelliCookUser _user = new()
     {
         Name = "Name",
+        Role = UserRoleModel.Admin,
         UserName = "Username",
         Email = "Email@Email.com",
         PasswordHash = "Password Hash"
@@ -49,8 +46,6 @@ public class LoginControllerTests
             null,
             null
         );
-        _userManagerMock.Setup(m => m.SupportsUserRole).Returns(true);
-        _userManagerMock.Setup(m => m.GetRolesAsync(It.IsAny<IntelliCookUser>())).ReturnsAsync(_roles);
         _loginController = new LoginController(_userManagerMock.Object, _jwtOptions);
     }
 
@@ -86,9 +81,8 @@ public class LoginControllerTests
             .SingleOrDefault(c => c.Type == ClaimTypes.Name)?
             .Value.Should().Be(_user.UserName);
         securityToken.Claims
-            .Where(c => c.Type == ClaimTypes.Role)
-            .Select(c => c.Value)
-            .Should().BeEquivalentTo(_roles);
+            .SingleOrDefault(c => c.Type == ClaimTypes.Role)?
+            .Value.Should().Be(_user.Role.ToString());
     }
 
     [Fact]
