@@ -7,7 +7,7 @@ public class RegisterPostRequestModel
     [Required]
     [MaxLength(256)]
     [RegularExpression(
-        @"^[^\s]+$",
+        @"^.*\S.*$",
         ErrorMessage = "Name cannot contain only whitespace characters."
     )]
     public string Name { get; set; }
