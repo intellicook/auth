@@ -22,7 +22,7 @@ public class LoginController(UserManager<IntelliCookUser> userManager, IOptions<
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(LoginPostResponseModel), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Post(LoginPostRequestModel request)
     {
         var user = await userManager.FindByNameAsync(request.Username);

@@ -20,9 +20,8 @@ public class UserController(UserManager<IntelliCookUser> userManager) : Controll
     public async Task<IActionResult> Get()
     {
         var name = User.Claims
-            .Where(c => c.Type == ClaimTypes.Name)
-            .Select(c => c.Value)
-            .FirstOrDefault();
+            .SingleOrDefault(c => c.Type == ClaimTypes.Name)?
+            .Value;
 
         if (name == null)
         {
