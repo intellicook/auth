@@ -1,6 +1,6 @@
 namespace IntelliCook.Auth.Host.Options;
 
-public class DatabaseOptions : IOptionsBase
+public class DatabaseOptions : IAuthOptions
 {
     public static string SectionKey => "Database";
 
