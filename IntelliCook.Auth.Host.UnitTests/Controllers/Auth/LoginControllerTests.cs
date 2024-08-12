@@ -53,7 +53,7 @@ public class LoginControllerTests
         _userManagerMock.Setup(m => m.GetRolesAsync(It.IsAny<IntelliCookUser>())).ReturnsAsync(_roles);
         _loginController = new LoginController(_userManagerMock.Object, _jwtOptions);
     }
-    
+
     #region Post
 
     [Fact]
@@ -72,10 +72,10 @@ public class LoginControllerTests
         _userManagerMock
             .Setup(m => m.CheckPasswordAsync(_user, request.Password))
             .ReturnsAsync(true);
-        
+
         // Act
         var result = await _loginController.Post(request);
-        
+
         // Assert
         var token = result.Should().BeOfType<OkObjectResult>().Which
             .Value.Should().BeOfType<LoginPostResponseModel>().Which
@@ -104,13 +104,13 @@ public class LoginControllerTests
         _userManagerMock
             .Setup(m => m.FindByNameAsync(request.Username))
             .ReturnsAsync(null as IntelliCookUser);
-        
+
         // Act
         var result = await _loginController.Post(request);
-        
+
         // Assert
         result.Should().BeOfType<UnauthorizedResult>();
-        
+
         _userManagerMock.Verify(m => m.CheckPasswordAsync(_user, request.Password), Times.Never);
     }
 
@@ -130,13 +130,13 @@ public class LoginControllerTests
         _userManagerMock
             .Setup(m => m.CheckPasswordAsync(_user, request.Password))
             .ReturnsAsync(false);
-        
+
         // Act
         var result = await _loginController.Post(request);
-        
+
         // Assert
         result.Should().BeOfType<UnauthorizedResult>();
     }
-    
+
     #endregion
 }
