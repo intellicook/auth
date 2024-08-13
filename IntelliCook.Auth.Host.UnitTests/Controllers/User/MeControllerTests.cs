@@ -144,4 +144,130 @@ public class MeControllerTests
     }
 
     #endregion
+
+    #region Delete
+
+    [Fact]
+    public async void Post_Success_ReturnsOkObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+        _userManagerMock
+            .Setup(m => m.FindByNameAsync(_user.Name))
+            .ReturnsAsync(_user);
+        _userManagerMock
+            .Setup(m => m.DeleteAsync(_user))
+            .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        var result = await _meController.Delete();
+
+        // Assert
+        result.Should().BeOfType<NoContentResult>();
+
+        _userManagerMock.Verify(m => m.DeleteAsync(_user), Times.Once);
+    }
+
+    [Fact]
+    public async void Post_DeleteFailed_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+        _userManagerMock
+            .Setup(m => m.FindByNameAsync(_user.Name))
+            .ReturnsAsync(_user);
+        _userManagerMock
+            .Setup(m => m.DeleteAsync(_user))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Error" }));
+
+        // Act
+        var result = await _meController.Delete();
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.DeleteAsync(_user), Times.Once);
+    }
+
+    [Fact]
+    public async void Post_NameNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+
+        // Act
+        var result = await _meController.Get();
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        _userManagerMock.Verify(m => m.DeleteAsync(It.IsAny<IntelliCookUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async void Post_RoleNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name)
+            });
+
+        // Act
+        var result = await _meController.Get();
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        _userManagerMock.Verify(m => m.DeleteAsync(It.IsAny<IntelliCookUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async void Post_UserNotFound_ReturnsNotFoundObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+        _userManagerMock
+            .Setup(m => m.FindByNameAsync(_user.Name))
+            .ReturnsAsync(null as IntelliCookUser);
+
+        // Act
+        var result = await _meController.Get();
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+        _userManagerMock.Verify(m => m.DeleteAsync(It.IsAny<IntelliCookUser>()), Times.Never);
+    }
+
+    #endregion
 }
