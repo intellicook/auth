@@ -1,6 +1,7 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.E2ETests.Fixtures;
+using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 using System.Net;
 using System.Text.Json;
 
@@ -17,8 +18,8 @@ public class MeControllerTests(ClientFixture fixture)
     public async void Get_Success_ReturnsOkObjectResult()
     {
         // Arrange
-        await using var user = await fixture.GivenUser();
-        var token = await fixture.GetToken();
+        await using var user = await fixture.With(new GivenUser());
+        var token = await user.GetToken();
         var request = new HttpRequestMessage(HttpMethod.Get, Path);
         request.Headers.Add("Authorization", $"Bearer {token}");
 

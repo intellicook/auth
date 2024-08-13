@@ -1,6 +1,7 @@
 using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Contract.Auth.Register;
 using IntelliCook.Auth.Contract.User;
+using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -12,25 +13,6 @@ namespace IntelliCook.Auth.Host.E2ETests.Fixtures;
 
 public class ClientFixture : IDisposable
 {
-    public class GivenResource<T>(T resource, Func<Task> cleanup) : IDisposable, IAsyncDisposable
-    {
-        public T Resource { get; } = resource;
-
-        private Func<Task> Cleanup { get; } = cleanup;
-
-        public void Dispose()
-        {
-            Cleanup().Wait();
-            GC.SuppressFinalize(this);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            await Cleanup();
-            GC.SuppressFinalize(this);
-        }
-    }
-
     public WebApplicationFactory<Program> Factory { get; }
 
     public HttpClient Client { get; }
@@ -71,57 +53,11 @@ public class ClientFixture : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public async Task<GivenResource<(string name, string username, string email, string password)>> GivenUser(
-        string? name = null,
-        string? username = null,
-        string? email = null,
-        string? password = null
-    )
+    public async Task<T> With<T>(T resource) where T : GivenBase
     {
-        var request = new RegisterPostRequestModel
-        {
-            Name = name ?? DefaultUser.Name,
-            Username = username ?? DefaultUser.UserName,
-            Email = email ?? DefaultUser.Email,
-            Password = password ?? DefaultUserPassword
-        };
-
-        var response = await Client.PostAsJsonAsync("/Auth/Register", request, SerializerOptions);
-
-        response.EnsureSuccessStatusCode();
-
-        return new GivenResource<(string name, string username, string email, string password)>(
-            (request.Name, request.Username, request.Email, request.Password),
-            async () =>
-            {
-                var token = await GetToken(request.Username, request.Password);
-                var deleteRequest = new HttpRequestMessage(HttpMethod.Delete, "/User/Me");
-                deleteRequest.Headers.Add("Authorization", $"Bearer {token}");
-
-                var deleteResponse = await Client.SendAsync(deleteRequest);
-                deleteResponse.EnsureSuccessStatusCode();
-            }
-        );
-    }
-
-    /// <summary>
-    ///     Requires `GivenUser` to be called first.
-    /// </summary>
-    public async Task<string> GetToken(string? username = null, string? password = null)
-    {
-        var request = new LoginPostRequestModel
-        {
-            Username = username ?? DefaultUser.UserName,
-            Password = password ?? DefaultUserPassword
-        };
-
-        var response = await Client.PostAsJsonAsync("/Auth/Login", request, SerializerOptions);
-
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        var token = JsonSerializer.Deserialize<LoginPostResponseModel>(content, SerializerOptions)?.AccessToken;
-
-        return token ?? throw new InvalidOperationException("Failed to get token.");
+        resource.Create(this);
+        await resource.Init();
+        return resource;
     }
 }
 

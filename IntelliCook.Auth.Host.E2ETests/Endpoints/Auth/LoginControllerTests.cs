@@ -1,6 +1,7 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Host.E2ETests.Fixtures;
+using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -19,11 +20,11 @@ public class LoginControllerTests(ClientFixture fixture)
     public async void Post_Success_ReturnsOkObjectResult()
     {
         // Arrange
-        await using var user = await fixture.GivenUser();
+        await using var user = await fixture.With(new GivenUser());
         var request = new LoginPostRequestModel
         {
-            Username = user.Resource.username,
-            Password = user.Resource.password
+            Username = user.Username,
+            Password = user.Password
         };
 
         // Act
@@ -45,11 +46,11 @@ public class LoginControllerTests(ClientFixture fixture)
     public async void Post_UsernameNotFound_ReturnsUnauthorizedResult()
     {
         // Arrange
-        await using var user = await fixture.GivenUser();
+        await using var user = await fixture.With(new GivenUser());
         var request = new LoginPostRequestModel
         {
             Username = "Unknown Username",
-            Password = user.Resource.password
+            Password = user.Password
         };
 
         // Act
@@ -63,10 +64,10 @@ public class LoginControllerTests(ClientFixture fixture)
     public async void Post_PasswordIncorrect_ReturnsUnauthorizedResult()
     {
         // Arrange
-        await using var user = await fixture.GivenUser();
+        await using var user = await fixture.With(new GivenUser());
         var request = new LoginPostRequestModel
         {
-            Username = user.Resource.username,
+            Username = user.Username,
             Password = "Incorrect Password"
         };
 
