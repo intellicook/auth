@@ -12,6 +12,25 @@ namespace IntelliCook.Auth.Host.E2ETests.Fixtures;
 
 public class ClientFixture : IDisposable
 {
+    public class GivenResource<T>(T resource, Func<Task> cleanup) : IDisposable, IAsyncDisposable
+    {
+        public T Resource { get; } = resource;
+
+        private Func<Task> Cleanup { get; } = cleanup;
+
+        public void Dispose()
+        {
+            Cleanup().Wait();
+            GC.SuppressFinalize(this);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            await Cleanup();
+            GC.SuppressFinalize(this);
+        }
+    }
+
     public WebApplicationFactory<Program> Factory { get; }
 
     public HttpClient Client { get; }
@@ -43,20 +62,16 @@ public class ClientFixture : IDisposable
 
         Factory = new WebApplicationFactory<Program>();
         Client = Factory.CreateClient();
-
-        // TODO: Add per test method solution after implementing a delete user endpoint
-        var task = GivenUser();
-        task.Wait();
     }
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         Client.Dispose();
         Factory.Dispose();
+        GC.SuppressFinalize(this);
     }
 
-    public async Task GivenUser(
+    public async Task<GivenResource<(string name, string username, string email, string password)>> GivenUser(
         string? name = null,
         string? username = null,
         string? email = null,
@@ -74,8 +89,24 @@ public class ClientFixture : IDisposable
         var response = await Client.PostAsJsonAsync("/Auth/Register", request, SerializerOptions);
 
         response.EnsureSuccessStatusCode();
+
+        return new GivenResource<(string name, string username, string email, string password)>(
+            (request.Name, request.Username, request.Email, request.Password),
+            async () =>
+            {
+                var token = await GetToken(request.Username, request.Password);
+                var deleteRequest = new HttpRequestMessage(HttpMethod.Delete, "/User/Me");
+                deleteRequest.Headers.Add("Authorization", $"Bearer {token}");
+
+                var deleteResponse = await Client.SendAsync(deleteRequest);
+                deleteResponse.EnsureSuccessStatusCode();
+            }
+        );
     }
 
+    /// <summary>
+    ///     Requires `GivenUser` to be called first.
+    /// </summary>
     public async Task<string> GetToken(string? username = null, string? password = null)
     {
         var request = new LoginPostRequestModel

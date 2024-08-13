@@ -17,6 +17,7 @@ public class MeControllerTests(ClientFixture fixture)
     public async void Get_Success_ReturnsOkObjectResult()
     {
         // Arrange
+        await using var user = await fixture.GivenUser();
         var token = await fixture.GetToken();
         var request = new HttpRequestMessage(HttpMethod.Get, Path);
         request.Headers.Add("Authorization", $"Bearer {token}");
@@ -29,12 +30,12 @@ public class MeControllerTests(ClientFixture fixture)
         var content = await response.Content.ReadAsStringAsync();
         content.Should().NotBeNullOrEmpty();
 
-        var user = JsonSerializer.Deserialize<UserGetResponseModel>(content, fixture.SerializerOptions);
-        user.Should().NotBeNull();
-        user!.Name.Should().Be(fixture.DefaultUser.Name);
-        user.Role.Should().Be(fixture.DefaultUser.Role);
-        user.Username.Should().Be(fixture.DefaultUser.UserName);
-        user.Email.Should().Be(fixture.DefaultUser.Email);
+        var userResponse = JsonSerializer.Deserialize<UserGetResponseModel>(content, fixture.SerializerOptions);
+        userResponse.Should().NotBeNull();
+        userResponse!.Name.Should().Be(fixture.DefaultUser.Name);
+        userResponse.Role.Should().Be(fixture.DefaultUser.Role);
+        userResponse.Username.Should().Be(fixture.DefaultUser.UserName);
+        userResponse.Email.Should().Be(fixture.DefaultUser.Email);
     }
 
     [Fact]
@@ -46,6 +47,10 @@ public class MeControllerTests(ClientFixture fixture)
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
+
+    #endregion
+
+    #region Delete
 
     #endregion
 }

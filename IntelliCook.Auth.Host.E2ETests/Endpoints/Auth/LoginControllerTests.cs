@@ -19,10 +19,11 @@ public class LoginControllerTests(ClientFixture fixture)
     public async void Post_Success_ReturnsOkObjectResult()
     {
         // Arrange
+        await using var user = await fixture.GivenUser();
         var request = new LoginPostRequestModel
         {
-            Username = fixture.DefaultUser.UserName,
-            Password = fixture.DefaultUserPassword
+            Username = user.Resource.username,
+            Password = user.Resource.password
         };
 
         // Act
@@ -44,10 +45,11 @@ public class LoginControllerTests(ClientFixture fixture)
     public async void Post_UsernameNotFound_ReturnsUnauthorizedResult()
     {
         // Arrange
+        await using var user = await fixture.GivenUser();
         var request = new LoginPostRequestModel
         {
             Username = "Unknown Username",
-            Password = fixture.DefaultUserPassword
+            Password = user.Resource.password
         };
 
         // Act
@@ -61,9 +63,10 @@ public class LoginControllerTests(ClientFixture fixture)
     public async void Post_PasswordIncorrect_ReturnsUnauthorizedResult()
     {
         // Arrange
+        await using var user = await fixture.GivenUser();
         var request = new LoginPostRequestModel
         {
-            Username = fixture.DefaultUser.UserName,
+            Username = user.Resource.username,
             Password = "Incorrect Password"
         };
 
