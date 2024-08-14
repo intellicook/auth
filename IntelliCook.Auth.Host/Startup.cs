@@ -71,8 +71,6 @@ public class Startup
         app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
-        // TODO: Remove this line after all controllers are implemented
-        // app.MapGroup("Identity").MapIdentityApi<IdentityUser>().WithTags(["Identity"]);
         app.MapControllers();
     }
 }

@@ -2,6 +2,36 @@
 
 The authentication service for IntelliCook.
 
+## Design
+
+The Auth service contains authentication and authorization information of the users.
+
+### User
+
+- **Name**: The name of the user for display.
+
+- **Username**: The username of the user for unique identification.
+
+- **Email**: The email of the user for communication.
+
+- **Password**: The password of the user for authentication.
+
+- **Role**: The role of the user for authorization, which is one of the following:
+
+    1. **None**: A usual user with normal access to the service.
+  
+    2. **Admin**: An admin user with access to all the features of the service including administrative controls.
+  
+    3. **Dev**: A developer user with access to all the features of the service and the ability to manage all the users.
+
+### Authentication
+
+- The authentication is done with JWT tokens.
+
+- The login endpoint is at `/Auth/Login`.
+
+- The access token will not expire.
+
 ## Development Setup
 
 The service uses [ASP.NET Core](https://dotnet.microsoft.com/en-us/apps/aspnet) on C# 12 and .NET 8.0, and [Entity Framework Core 8](https://www.nuget.org/packages/Microsoft.EntityFrameworkCore). Since I am using JetBrains Rider, I will be able to provide more instructions for setting up the project in Rider.

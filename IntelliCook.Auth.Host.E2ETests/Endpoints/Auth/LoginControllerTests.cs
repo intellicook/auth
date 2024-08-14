@@ -1,6 +1,8 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.Auth.Login;
+using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.E2ETests.Fixtures;
+using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -19,10 +21,11 @@ public class LoginControllerTests(ClientFixture fixture)
     public async void Post_Success_ReturnsOkObjectResult()
     {
         // Arrange
+        await using var user = await fixture.With(new GivenUser());
         var request = new LoginPostRequestModel
         {
-            Username = fixture.DefaultUser.UserName,
-            Password = fixture.DefaultUserPassword
+            Username = user.Username,
+            Password = user.Password
         };
 
         // Act
@@ -37,17 +40,29 @@ public class LoginControllerTests(ClientFixture fixture)
         token.Should().NotBeNull();
         token!.AccessToken.Should().NotBeNullOrEmpty();
 
-        // TODO: Add check to assert token is valid
+        var meRequest = new HttpRequestMessage(HttpMethod.Get, "/User/Me");
+        meRequest.Headers.Add("Authorization", $"Bearer {token.AccessToken}");
+
+        var meResponse = await _client.SendAsync(meRequest);
+        meResponse.EnsureSuccessStatusCode();
+
+        var meContent = await meResponse.Content.ReadAsStringAsync();
+        meContent.Should().NotBeNullOrEmpty();
+
+        var meUserResponse = JsonSerializer.Deserialize<UserGetResponseModel>(meContent, fixture.SerializerOptions);
+        meUserResponse.Should().NotBeNull();
+        meUserResponse!.Username.Should().Be(user.Username);
     }
 
     [Fact]
     public async void Post_UsernameNotFound_ReturnsUnauthorizedResult()
     {
         // Arrange
+        await using var user = await fixture.With(new GivenUser());
         var request = new LoginPostRequestModel
         {
             Username = "Unknown Username",
-            Password = fixture.DefaultUserPassword
+            Password = user.Password
         };
 
         // Act
@@ -61,9 +76,10 @@ public class LoginControllerTests(ClientFixture fixture)
     public async void Post_PasswordIncorrect_ReturnsUnauthorizedResult()
     {
         // Arrange
+        await using var user = await fixture.With(new GivenUser());
         var request = new LoginPostRequestModel
         {
-            Username = fixture.DefaultUser.UserName,
+            Username = user.Username,
             Password = "Incorrect Password"
         };
 

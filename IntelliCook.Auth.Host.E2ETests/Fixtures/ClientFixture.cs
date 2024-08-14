@@ -1,6 +1,7 @@
 using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Contract.Auth.Register;
 using IntelliCook.Auth.Contract.User;
+using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -23,17 +24,6 @@ public class ClientFixture : IDisposable
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
     };
 
-    public IntelliCookUser DefaultUser { get; } = new()
-    {
-        Name = "Default Name",
-        Role = UserRoleModel.None,
-        UserName = "Default_Username",
-        Email = "Default.Email@Email.com",
-        PasswordHash = "Default Password Hash"
-    };
-
-    public string DefaultUserPassword { get; } = "Default Password 1234";
-
     public ClientFixture()
     {
         Environment.SetEnvironmentVariable(
@@ -43,54 +33,20 @@ public class ClientFixture : IDisposable
 
         Factory = new WebApplicationFactory<Program>();
         Client = Factory.CreateClient();
-
-        // TODO: Add per test method solution after implementing a delete user endpoint
-        var task = GivenUser();
-        task.Wait();
     }
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         Client.Dispose();
         Factory.Dispose();
+        GC.SuppressFinalize(this);
     }
 
-    public async Task GivenUser(
-        string? name = null,
-        string? username = null,
-        string? email = null,
-        string? password = null
-    )
+    public async Task<T> With<T>(T resource, bool willCleanup = true) where T : GivenBase
     {
-        var request = new RegisterPostRequestModel
-        {
-            Name = name ?? DefaultUser.Name,
-            Username = username ?? DefaultUser.UserName,
-            Email = email ?? DefaultUser.Email,
-            Password = password ?? DefaultUserPassword
-        };
-
-        var response = await Client.PostAsJsonAsync("/Auth/Register", request, SerializerOptions);
-
-        response.EnsureSuccessStatusCode();
-    }
-
-    public async Task<string> GetToken(string? username = null, string? password = null)
-    {
-        var request = new LoginPostRequestModel
-        {
-            Username = username ?? DefaultUser.UserName,
-            Password = password ?? DefaultUserPassword
-        };
-
-        var response = await Client.PostAsJsonAsync("/Auth/Login", request, SerializerOptions);
-
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        var token = JsonSerializer.Deserialize<LoginPostResponseModel>(content, SerializerOptions)?.AccessToken;
-
-        return token ?? throw new InvalidOperationException("Failed to get token.");
+        resource.Create(this, willCleanup);
+        await resource.Init();
+        return resource;
     }
 }
 
