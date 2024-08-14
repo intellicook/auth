@@ -1,3 +1,4 @@
+using IntelliCook.Auth.Client;
 using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Contract.Auth.Register;
 using IntelliCook.Auth.Contract.User;
@@ -17,6 +18,8 @@ public class ClientFixture : IDisposable
 
     public HttpClient Client { get; }
 
+    public AuthClient AuthClient { get; }
+
     public JsonSerializerOptions SerializerOptions { get; } = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -33,6 +36,10 @@ public class ClientFixture : IDisposable
 
         Factory = new WebApplicationFactory<Program>();
         Client = Factory.CreateClient();
+        AuthClient = new AuthClient
+        {
+            Client = Client
+        };
     }
 
     public void Dispose()

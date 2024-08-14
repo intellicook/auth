@@ -13,7 +13,6 @@ namespace IntelliCook.Auth.Host.E2ETests.Endpoints.Auth;
 public class LoginControllerTests(ClientFixture fixture)
 {
     private const string Path = "/Auth/Login";
-    private readonly HttpClient _client = fixture.Client;
 
     #region Post
 
@@ -29,21 +28,19 @@ public class LoginControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Path, request, fixture.SerializerOptions);
+        var result = await fixture.AuthClient.PostAuthLogin(request);
 
         // Assert
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().NotBeNullOrEmpty();
+        result.IsSuccessful.Should().BeTrue();
 
-        var token = JsonSerializer.Deserialize<LoginPostResponseModel>(content, fixture.SerializerOptions);
+        var token = result.Value;
         token.Should().NotBeNull();
         token!.AccessToken.Should().NotBeNullOrEmpty();
 
         var meRequest = new HttpRequestMessage(HttpMethod.Get, "/User/Me");
         meRequest.Headers.Add("Authorization", $"Bearer {token.AccessToken}");
 
-        var meResponse = await _client.SendAsync(meRequest);
+        var meResponse = await fixture.Client.SendAsync(meRequest);
         meResponse.EnsureSuccessStatusCode();
 
         var meContent = await meResponse.Content.ReadAsStringAsync();
@@ -66,10 +63,10 @@ public class LoginControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Path, request, fixture.SerializerOptions);
+        var result = await fixture.AuthClient.PostAuthLogin(request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        result.HasError.Should().BeTrue();
     }
 
     [Fact]
@@ -84,7 +81,7 @@ public class LoginControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Path, request, fixture.SerializerOptions);
+        var response = await fixture.Client.PostAsJsonAsync(Path, request, fixture.SerializerOptions);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
