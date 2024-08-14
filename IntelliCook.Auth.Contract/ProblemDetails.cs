@@ -11,6 +11,8 @@ public class ProblemDetails
     public string? Detail { get; set; }
 
     public string? Instance { get; set; }
+
+    public string? TraceId { get; set; }
 }
 
 public class ValidationProblemDetails : ProblemDetails

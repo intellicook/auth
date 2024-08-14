@@ -12,8 +12,6 @@ namespace IntelliCook.Auth.Host.E2ETests.Endpoints.Auth;
 [Collection(nameof(ClientFixture))]
 public class LoginControllerTests(ClientFixture fixture)
 {
-    private const string Path = "/Auth/Login";
-
     #region Post
 
     [Fact]
@@ -28,27 +26,19 @@ public class LoginControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var result = await fixture.AuthClient.PostAuthLogin(request);
+        var result = await fixture.Client.PostAuthLogin(request);
 
         // Assert
-        result.IsSuccessful.Should().BeTrue();
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        result.Value.AccessToken.Should().NotBeNullOrEmpty();
 
-        var token = result.Value;
-        token.Should().NotBeNull();
-        token!.AccessToken.Should().NotBeNullOrEmpty();
+        fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {result.Value.AccessToken}");
 
-        var meRequest = new HttpRequestMessage(HttpMethod.Get, "/User/Me");
-        meRequest.Headers.Add("Authorization", $"Bearer {token.AccessToken}");
+        var meResult = await fixture.Client.GetUserMe();
+        meResult.StatusCode.Should().Be(HttpStatusCode.OK);
+        meResult.Value.Username.Should().Be(user.Username);
 
-        var meResponse = await fixture.Client.SendAsync(meRequest);
-        meResponse.EnsureSuccessStatusCode();
-
-        var meContent = await meResponse.Content.ReadAsStringAsync();
-        meContent.Should().NotBeNullOrEmpty();
-
-        var meUserResponse = JsonSerializer.Deserialize<UserGetResponseModel>(meContent, fixture.SerializerOptions);
-        meUserResponse.Should().NotBeNull();
-        meUserResponse!.Username.Should().Be(user.Username);
+        fixture.Client.RequestHeaders.Remove("Authorization");
     }
 
     [Fact]
@@ -63,10 +53,10 @@ public class LoginControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var result = await fixture.AuthClient.PostAuthLogin(request);
+        var result = await fixture.Client.PostAuthLogin(request);
 
         // Assert
-        result.HasError.Should().BeTrue();
+        result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -81,10 +71,10 @@ public class LoginControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var response = await fixture.Client.PostAsJsonAsync(Path, request, fixture.SerializerOptions);
+        var result = await fixture.Client.PostAuthLogin(request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     #endregion

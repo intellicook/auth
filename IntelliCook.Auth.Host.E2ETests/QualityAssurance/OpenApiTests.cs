@@ -17,7 +17,7 @@ public class OpenApiTests(ClientFixture fixture)
     public void Endpoints_HaveSummary()
     {
         // Arrange
-        var client = fixture.Client;
+        var client = fixture.Client.Client;
 
         // Act
         var document = GetOpenApiDocument(client);
