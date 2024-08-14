@@ -1,5 +1,6 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.Auth.Login;
+using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.E2ETests.Fixtures;
 using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 using System.Net;
@@ -39,7 +40,18 @@ public class LoginControllerTests(ClientFixture fixture)
         token.Should().NotBeNull();
         token!.AccessToken.Should().NotBeNullOrEmpty();
 
-        // TODO: Add check to assert token is valid
+        var meRequest = new HttpRequestMessage(HttpMethod.Get, "/User/Me");
+        meRequest.Headers.Add("Authorization", $"Bearer {token.AccessToken}");
+
+        var meResponse = await _client.SendAsync(meRequest);
+        meResponse.EnsureSuccessStatusCode();
+
+        var meContent = await meResponse.Content.ReadAsStringAsync();
+        meContent.Should().NotBeNullOrEmpty();
+
+        var meUserResponse = JsonSerializer.Deserialize<UserGetResponseModel>(meContent, fixture.SerializerOptions);
+        meUserResponse.Should().NotBeNull();
+        meUserResponse!.Username.Should().Be(user.Username);
     }
 
     [Fact]

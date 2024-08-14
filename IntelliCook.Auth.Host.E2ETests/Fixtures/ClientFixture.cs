@@ -24,17 +24,6 @@ public class ClientFixture : IDisposable
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
     };
 
-    public IntelliCookUser DefaultUser { get; } = new()
-    {
-        Name = "Default Name",
-        Role = UserRoleModel.None,
-        UserName = "Default_Username",
-        Email = "Default.Email@Email.com",
-        PasswordHash = "Default Password Hash"
-    };
-
-    public string DefaultUserPassword { get; } = "Default Password 1234";
-
     public ClientFixture()
     {
         Environment.SetEnvironmentVariable(
@@ -53,9 +42,9 @@ public class ClientFixture : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public async Task<T> With<T>(T resource) where T : GivenBase
+    public async Task<T> With<T>(T resource, bool willCleanup = true) where T : GivenBase
     {
-        resource.Create(this);
+        resource.Create(this, willCleanup);
         await resource.Init();
         return resource;
     }

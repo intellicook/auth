@@ -30,7 +30,7 @@ public class GivenUser : GivenBase
         response.EnsureSuccessStatusCode();
     }
 
-    public override async Task Cleanup()
+    protected override async Task Cleanup()
     {
         var token = await GetToken();
         var request = new HttpRequestMessage(HttpMethod.Delete, "/User/Me");
