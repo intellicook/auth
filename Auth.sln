@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelliCook.Auth.Host", "In
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelliCook.Auth.Infrastructure", "IntelliCook.Auth.Infrastructure\IntelliCook.Auth.Infrastructure.csproj", "{D2226297-0E1D-43A1-8DF7-1BE11735295F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelliCook.Auth.Host.E2ETests", "IntelliCook.Auth.Host.E2ETests\IntelliCook.Auth.Host.E2ETests.csproj", "{069B3D28-D6A0-4F8D-81C1-E87B2BA0CEEF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelliCook.Auth.Client.E2ETests", "IntelliCook.Auth.Client.E2ETests\IntelliCook.Auth.Client.E2ETests.csproj", "{069B3D28-D6A0-4F8D-81C1-E87B2BA0CEEF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntelliCook.Auth.Host.UnitTests", "IntelliCook.Auth.Host.UnitTests\IntelliCook.Auth.Host.UnitTests.csproj", "{AB97F45A-796A-4027-BB88-7D674311CF09}"
 EndProject

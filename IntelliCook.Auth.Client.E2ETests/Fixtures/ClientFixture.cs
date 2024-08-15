@@ -1,12 +1,11 @@
-using IntelliCook.Auth.Client;
-using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
+using IntelliCook.Auth.Client.E2ETests.Fixtures.Given;
 using IntelliCook.Auth.Host.Options;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace IntelliCook.Auth.Host.E2ETests.Fixtures;
+namespace IntelliCook.Auth.Client.E2ETests.Fixtures;
 
 public class ClientFixture : IDisposable
 {

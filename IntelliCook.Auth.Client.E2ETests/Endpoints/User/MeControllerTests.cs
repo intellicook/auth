@@ -1,10 +1,10 @@
 using FluentAssertions;
+using IntelliCook.Auth.Client.E2ETests.Fixtures;
+using IntelliCook.Auth.Client.E2ETests.Fixtures.Given;
 using IntelliCook.Auth.Contract.User;
-using IntelliCook.Auth.Host.E2ETests.Fixtures;
-using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 using System.Net;
 
-namespace IntelliCook.Auth.Host.E2ETests.Endpoints.User;
+namespace IntelliCook.Auth.Client.E2ETests.Endpoints.User;
 
 [Collection(nameof(ClientFixture))]
 public class MeControllerTests(ClientFixture fixture)

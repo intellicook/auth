@@ -1,12 +1,12 @@
 using FluentAssertions;
-using IntelliCook.Auth.Host.E2ETests.Fixtures;
+using IntelliCook.Auth.Client.E2ETests.Fixtures;
 using IntelliCook.Auth.Host.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 
-namespace IntelliCook.Auth.Host.E2ETests.QualityAssurance;
+namespace IntelliCook.Auth.Client.E2ETests.QualityAssurance;
 
 [Collection(nameof(ClientFixture))]
 public class OpenApiTests(ClientFixture fixture)

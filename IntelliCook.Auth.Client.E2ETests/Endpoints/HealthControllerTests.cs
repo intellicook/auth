@@ -1,7 +1,6 @@
 using FluentAssertions;
-using IntelliCook.Auth.Client;
+using IntelliCook.Auth.Client.E2ETests.Fixtures;
 using IntelliCook.Auth.Contract.Health;
-using IntelliCook.Auth.Host.E2ETests.Fixtures;
 using IntelliCook.Auth.Host.Extensions.Models;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +8,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Moq;
 using System.Net;
 
-namespace IntelliCook.Auth.Host.E2ETests.Endpoints;
+namespace IntelliCook.Auth.Client.E2ETests.Endpoints;
 
 [Collection(nameof(ClientFixture))]
 public class HealthControllerTests
