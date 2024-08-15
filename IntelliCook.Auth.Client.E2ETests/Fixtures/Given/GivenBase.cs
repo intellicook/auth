@@ -1,4 +1,4 @@
-namespace IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
+namespace IntelliCook.Auth.Client.E2ETests.Fixtures.Given;
 
 public abstract class GivenBase : IDisposable, IAsyncDisposable
 {

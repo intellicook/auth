@@ -3,7 +3,7 @@ using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Contract.Auth.Register;
 using System.Net;
 
-namespace IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
+namespace IntelliCook.Auth.Client.E2ETests.Fixtures.Given;
 
 public class GivenUser : GivenBase
 {
