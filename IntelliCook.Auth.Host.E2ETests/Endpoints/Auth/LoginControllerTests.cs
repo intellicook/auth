@@ -1,11 +1,8 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.Auth.Login;
-using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.E2ETests.Fixtures;
 using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace IntelliCook.Auth.Host.E2ETests.Endpoints.Auth;
 
@@ -39,6 +36,8 @@ public class LoginControllerTests(ClientFixture fixture)
         meResult.Value.Username.Should().Be(user.Username);
 
         fixture.Client.RequestHeaders.Remove("Authorization");
+
+        fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {await user.GetToken()}");
     }
 
     [Fact]

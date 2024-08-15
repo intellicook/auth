@@ -49,14 +49,19 @@ public class GivenUser : GivenBase
 
     protected override async Task Cleanup()
     {
+        if (Fixture.Client.RequestHeaders.Authorization != null)
+        {
+            Fixture.Client.RequestHeaders.Remove("Authorization");
+        }
+
+        var token = await GetToken();
+        Fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {token}");
+
         var result = await Fixture.Client.DeleteUserMe();
 
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        if (SetAuthorizationHeader)
-        {
-            Fixture.Client.RequestHeaders.Remove("Authorization");
-        }
+        Fixture.Client.RequestHeaders.Remove("Authorization");
     }
 
     public async Task<string> GetToken()

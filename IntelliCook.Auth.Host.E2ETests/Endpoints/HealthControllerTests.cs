@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Moq;
 using System.Net;
-using System.Text.Json;
 
 namespace IntelliCook.Auth.Host.E2ETests.Endpoints;
 
