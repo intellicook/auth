@@ -1,7 +1,7 @@
+using FluentAssertions;
 using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Contract.Auth.Register;
-using System.Net.Http.Json;
-using System.Text.Json;
+using System.Net;
 
 namespace IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 
@@ -15,6 +15,17 @@ public class GivenUser : GivenBase
 
     public string Password { get; set; } = "Default Password 1234";
 
+    private bool SetAuthorizationHeader { get; }
+
+    public GivenUser()
+    {
+    }
+
+    public GivenUser(bool setAuthorizationHeader)
+    {
+        SetAuthorizationHeader = setAuthorizationHeader;
+    }
+
     public override async Task Init()
     {
         var request = new RegisterPostRequestModel
@@ -25,19 +36,32 @@ public class GivenUser : GivenBase
             Password = Password
         };
 
-        var response = await Fixture.Client.PostAsJsonAsync("/Auth/Register", request, Fixture.SerializerOptions);
+        var result = await Fixture.Client.PostAuthRegister(request);
 
-        response.EnsureSuccessStatusCode();
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        if (SetAuthorizationHeader)
+        {
+            var token = await GetToken();
+            Fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {token}");
+        }
     }
 
     protected override async Task Cleanup()
     {
-        var token = await GetToken();
-        var request = new HttpRequestMessage(HttpMethod.Delete, "/User/Me");
-        request.Headers.Add("Authorization", $"Bearer {token}");
+        if (Fixture.Client.RequestHeaders.Authorization != null)
+        {
+            Fixture.Client.RequestHeaders.Remove("Authorization");
+        }
 
-        var response = await Fixture.Client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+        var token = await GetToken();
+        Fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {token}");
+
+        var result = await Fixture.Client.DeleteUserMe();
+
+        result.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        Fixture.Client.RequestHeaders.Remove("Authorization");
     }
 
     public async Task<string> GetToken()
@@ -48,12 +72,10 @@ public class GivenUser : GivenBase
             Password = Password
         };
 
-        var response = await Fixture.Client.PostAsJsonAsync("/Auth/Login", request, Fixture.SerializerOptions);
+        var response = await Fixture.Client.PostAuthLogin(request);
 
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        var token = JsonSerializer.Deserialize<LoginPostResponseModel>(content, Fixture.SerializerOptions)?.AccessToken;
+        response.IsSuccessful.Should().BeTrue();
 
-        return token ?? throw new InvalidOperationException("Failed to get token.");
+        return response.Value.AccessToken;
     }
 }

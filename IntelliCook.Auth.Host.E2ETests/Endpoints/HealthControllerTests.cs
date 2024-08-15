@@ -1,4 +1,5 @@
 using FluentAssertions;
+using IntelliCook.Auth.Client;
 using IntelliCook.Auth.Contract.Health;
 using IntelliCook.Auth.Host.E2ETests.Fixtures;
 using IntelliCook.Auth.Host.Extensions.Models;
@@ -7,28 +8,24 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Moq;
 using System.Net;
-using System.Text.Json;
 
 namespace IntelliCook.Auth.Host.E2ETests.Endpoints;
 
 [Collection(nameof(ClientFixture))]
 public class HealthControllerTests
 {
-    private const string Path = "/Health";
-    private readonly HttpClient _client;
-    private readonly ClientFixture _fixture;
+    private readonly AuthClient _client;
     private readonly Mock<HealthCheckService> _healthCheckServiceMock = new();
 
     public HealthControllerTests(ClientFixture fixture)
     {
-        _fixture = fixture;
-        _client = fixture.Factory.WithWebHostBuilder(builder =>
+        _client = fixture.ClientWithWebHostBuilder(builder =>
         {
             builder.ConfigureTestServices(services =>
             {
                 services.AddSingleton<HealthCheckService>(_ => _healthCheckServiceMock.Object);
             });
-        }).CreateClient();
+        });
     }
 
     #region Get
@@ -71,21 +68,19 @@ public class HealthControllerTests
             .ReturnsAsync(report);
 
         // Act
-        var response = await _client.GetAsync(Path);
+        var result = await _client.GetHealth();
 
         // Assert
-        response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().NotBeNullOrEmpty();
-
-        var health = JsonSerializer.Deserialize<HealthGetResponseModel>(content, _fixture.SerializerOptions);
-        health.Should().NotBeNull();
-        health!.Status.Should().Be(expectedStatus);
-        health.Checks.Should().BeEquivalentTo(statuses.Select(s => new HealthCheckModel
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        result.Value.Should().BeEquivalentTo(new HealthGetResponseModel
         {
-            Name = s.name,
-            Status = s.healthStatus.ToHealthStatusModel()
-        }));
+            Status = expectedStatus,
+            Checks = statuses.Select(s => new HealthCheckModel
+            {
+                Name = s.name,
+                Status = s.healthStatus.ToHealthStatusModel()
+            })
+        });
     }
 
     public static IEnumerable<object[]> Get_UnhealthyOrDegraded_ReturnsServiceUnavailableObjectResult_TestData()
@@ -148,21 +143,19 @@ public class HealthControllerTests
             .ReturnsAsync(report);
 
         // Act
-        var response = await _client.GetAsync(Path);
+        var result = await _client.GetHealth();
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().NotBeNullOrEmpty();
-
-        var health = JsonSerializer.Deserialize<HealthGetResponseModel>(content, _fixture.SerializerOptions);
-        health.Should().NotBeNull();
-        health!.Status.Should().Be(expectedStatus);
-        health.Checks.Should().BeEquivalentTo(statuses.Select(s => new HealthCheckModel
+        result.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        result.Error.Should().BeEquivalentTo(new HealthGetResponseModel
         {
-            Name = s.name,
-            Status = s.healthStatus.ToHealthStatusModel()
-        }));
+            Status = expectedStatus,
+            Checks = statuses.Select(s => new HealthCheckModel
+            {
+                Name = s.name,
+                Status = s.healthStatus.ToHealthStatusModel()
+            })
+        });
     }
 
     #endregion

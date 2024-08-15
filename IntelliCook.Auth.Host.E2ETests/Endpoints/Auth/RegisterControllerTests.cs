@@ -1,19 +1,13 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.Auth.Register;
 using IntelliCook.Auth.Host.E2ETests.Fixtures;
-using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
 
 namespace IntelliCook.Auth.Host.E2ETests.Endpoints.Auth;
 
 [Collection(nameof(ClientFixture))]
 public class RegisterControllerTests(ClientFixture fixture)
 {
-    private const string Path = "/Auth/Register";
-    private readonly HttpClient _client = fixture.Client;
-
     #region Post
 
     [Fact]
@@ -29,10 +23,13 @@ public class RegisterControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Path, request, fixture.SerializerOptions);
+        var result = await fixture.Client.PostAuthRegister(request);
 
         // Assert
-        response.EnsureSuccessStatusCode();
+        result.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // TODO: Add more assertions
+        // TODO: Delete user
     }
 
     public static IEnumerable<object[]> Post_Invalid_ReturnsBadRequest_TestData()
@@ -99,22 +96,14 @@ public class RegisterControllerTests(ClientFixture fixture)
     public async void Post_Invalid_ReturnsBadRequest(RegisterPostRequestModel request, string[] expectedErrors)
     {
         // Act
-        var response = await _client.PostAsJsonAsync(Path, request, fixture.SerializerOptions);
+        var result = await fixture.Client.PostAuthRegister(request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        var content = await response.Content.ReadAsStringAsync();
-        content.Should().NotBeNullOrEmpty();
-
-        var errors = JsonSerializer.Deserialize<ValidationProblemDetails>(
-            content,
-            fixture.SerializerOptions
-        );
-        errors.Should().NotBeNull();
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         foreach (var property in expectedErrors)
         {
-            errors!.Errors.Should().ContainKey(property);
+            result.ValidationError?.Errors.Should().ContainKey(property);
         }
     }
 

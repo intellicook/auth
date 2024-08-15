@@ -1,11 +1,8 @@
-using IntelliCook.Auth.Contract.Auth.Login;
-using IntelliCook.Auth.Contract.Auth.Register;
-using IntelliCook.Auth.Contract.User;
+using IntelliCook.Auth.Client;
 using IntelliCook.Auth.Host.E2ETests.Fixtures.Given;
 using IntelliCook.Auth.Host.Options;
-using IntelliCook.Auth.Infrastructure.Models;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -15,7 +12,7 @@ public class ClientFixture : IDisposable
 {
     public WebApplicationFactory<Program> Factory { get; }
 
-    public HttpClient Client { get; }
+    public AuthClient Client { get; }
 
     public JsonSerializerOptions SerializerOptions { get; } = new()
     {
@@ -32,7 +29,10 @@ public class ClientFixture : IDisposable
         );
 
         Factory = new WebApplicationFactory<Program>();
-        Client = Factory.CreateClient();
+        Client = new AuthClient
+        {
+            Client = Factory.CreateClient()
+        };
     }
 
     public void Dispose()
@@ -40,6 +40,14 @@ public class ClientFixture : IDisposable
         Client.Dispose();
         Factory.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    public AuthClient ClientWithWebHostBuilder(Action<IWebHostBuilder> configuration)
+    {
+        return new AuthClient
+        {
+            Client = Factory.WithWebHostBuilder(configuration).CreateClient()
+        };
     }
 
     public async Task<T> With<T>(T resource, bool willCleanup = true) where T : GivenBase
