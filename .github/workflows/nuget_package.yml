@@ -23,7 +23,12 @@ jobs:
       run: dotnet build --configuration Release
     - name: Pack
       run: dotnet pack --configuration Release
-    - name: Publish
+    - name: Publish contract
+      run: dotnet nuget push `
+        IntelliCook.Auth.Contract\bin\Release\*.nupkg `
+        --source https://nuget.pkg.github.com/intellicook/index.json `
+        --api-key ${{ secrets.GITHUB_TOKEN }}
+    - name: Publish client
       run: dotnet nuget push `
         IntelliCook.Auth.Client\bin\Release\*.nupkg `
         --source https://nuget.pkg.github.com/intellicook/index.json `

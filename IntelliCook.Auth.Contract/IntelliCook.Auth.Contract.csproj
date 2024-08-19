@@ -1,6 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <PackageId>IntelliCook.Auth.Contract</PackageId>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/intellicook/auth</RepositoryUrl>
+        <Version>0.1.0</Version>
+        <Authors>IntelliCook</Authors>
+        <PackageDescription>The contract for IntelliCook Auth service.</PackageDescription>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
