@@ -1,0 +1,31 @@
+name: Nuget Package
+
+on:
+  workflow_run:
+    workflows: [Quality Assurance]
+    types: [completed]
+    branches: ["main"]
+    
+jobs:
+  nuget_package:
+    
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release
+    - name: Pack
+      run: dotnet pack --configuration Release
+    - name: Publish
+      run: dotnet nuget push `
+        IntelliCook.Auth.Client/bin/Release/*.nupkg `
+        --configuration Release `
+        --source https://nuget.pkg.github.com/intellicook/index.json `
+        --api-key ${{ secrets.GITHUB_TOKEN }}
