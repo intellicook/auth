@@ -4,7 +4,7 @@
         <PackageId>IntelliCook.Auth.Client</PackageId>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/intellicook/auth</RepositoryUrl>
-        <Version>$([System.DateTime]::Now.ToString("yyyy.MM.dd.HHmmss"))</Version>
+        <Version>$([System.DateTime]::UtcNow.ToString("yyyy.MM.dd.HHmm"))</Version>
         <Authors>IntelliCook</Authors>
         <PackageDescription>The client for IntelliCook Auth service.</PackageDescription>
         <TargetFramework>net8.0</TargetFramework>
