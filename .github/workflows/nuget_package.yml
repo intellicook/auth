@@ -26,6 +26,5 @@ jobs:
     - name: Publish
       run: dotnet nuget push `
         IntelliCook.Auth.Client/bin/Release/*.nupkg `
-        --configuration Release `
         --source https://nuget.pkg.github.com/intellicook/index.json `
         --api-key ${{ secrets.GITHUB_TOKEN }}
