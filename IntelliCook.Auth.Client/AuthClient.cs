@@ -6,6 +6,7 @@ using IntelliCook.Auth.Contract.User;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -39,7 +40,7 @@ public class AuthClient : IAuthClient, IDisposable
     public AuthClient(IHttpContextAccessor httpContextAccessor, IOptions<IAuthOptions> options)
     {
         var auth = httpContextAccessor.HttpContext?.Request.Headers.Authorization;
-        if (auth is not null)
+        if (!StringValues.IsNullOrEmpty(auth.GetValueOrDefault("")))
         {
             RequestHeaders.Add("Authorization", auth.ToString());
         }
@@ -131,7 +132,8 @@ public class AuthClient : IAuthClient, IDisposable
         return IAuthClient.Result<T>.FromError(response.StatusCode, error);
     }
 
-    private async Task<IAuthClient.Result<TValue, TError>> CreateResultAsync<TValue, TError>(HttpResponseMessage response)
+    private async Task<IAuthClient.Result<TValue, TError>> CreateResultAsync<TValue, TError>(
+        HttpResponseMessage response)
         where TValue : class
         where TError : class
     {

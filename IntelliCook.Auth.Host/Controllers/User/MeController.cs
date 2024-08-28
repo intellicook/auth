@@ -26,7 +26,7 @@ public class MeController(UserManager<IntelliCookUser> userManager) : Controller
     {
         var name = GetUsername();
 
-        if (name == null)
+        if (string.IsNullOrEmpty(name))
         {
             return BadRequest(this.CreateValidationProblemDetails());
         }
