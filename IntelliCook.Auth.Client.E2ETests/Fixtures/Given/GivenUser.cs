@@ -36,7 +36,7 @@ public class GivenUser : GivenBase
             Password = Password
         };
 
-        var result = await Fixture.Client.PostAuthRegister(request);
+        var result = await Fixture.Client.PostAuthRegisterAsync(request);
 
         result.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -57,7 +57,7 @@ public class GivenUser : GivenBase
         var token = await GetToken();
         Fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {token}");
 
-        var result = await Fixture.Client.DeleteUserMe();
+        var result = await Fixture.Client.DeleteUserMeAsync();
 
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
@@ -72,7 +72,7 @@ public class GivenUser : GivenBase
             Password = Password
         };
 
-        var response = await Fixture.Client.PostAuthLogin(request);
+        var response = await Fixture.Client.PostAuthLoginAsync(request);
 
         response.IsSuccessful.Should().BeTrue();
 

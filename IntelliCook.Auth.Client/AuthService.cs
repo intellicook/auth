@@ -18,6 +18,6 @@ public static class AuthService
             {
                 o.BaseUrl = options.BaseUrl;
             });
-        services.AddScoped<AuthClient>();
+        services.AddScoped<IAuthClient, AuthClient>();
     }
 }

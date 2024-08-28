@@ -13,7 +13,7 @@ using System.Text.Json.Serialization;
 
 namespace IntelliCook.Auth.Client;
 
-public class AuthClient : IDisposable
+public class AuthClient : IAuthClient, IDisposable
 {
     public HttpClient Client { get; set; } = new();
 
@@ -55,49 +55,49 @@ public class AuthClient : IDisposable
 
     #region Auth
 
-    public async Task<IAuthClient.Result<LoginPostResponseModel>> PostAuthLogin(LoginPostRequestModel request)
+    public async Task<IAuthClient.Result<LoginPostResponseModel>> PostAuthLoginAsync(LoginPostRequestModel request)
     {
         var response = await Client.PostAsJsonAsync("/Auth/Login", request, SerializerOptions);
-        return await CreateResult<LoginPostResponseModel>(response);
+        return await CreateResultAsync<LoginPostResponseModel>(response);
     }
 
-    public async Task<IAuthClient.Result> PostAuthRegister(RegisterPostRequestModel request)
+    public async Task<IAuthClient.Result> PostAuthRegisterAsync(RegisterPostRequestModel request)
     {
         var response = await Client.PostAsJsonAsync("/Auth/Register", request, SerializerOptions);
-        return await CreateResult(response);
+        return await CreateResultAsync(response);
     }
 
     #endregion
 
     #region User
 
-    public async Task<IAuthClient.Result<UserGetResponseModel>> GetUserMe()
+    public async Task<IAuthClient.Result<UserGetResponseModel>> GetUserMeAsync()
     {
         var response = await Client.GetAsync("/User/Me");
-        return await CreateResult<UserGetResponseModel>(response);
+        return await CreateResultAsync<UserGetResponseModel>(response);
     }
 
-    public async Task<IAuthClient.Result> DeleteUserMe()
+    public async Task<IAuthClient.Result> DeleteUserMeAsync()
     {
         var response = await Client.DeleteAsync("/User/Me");
-        return await CreateResult(response);
+        return await CreateResultAsync(response);
     }
 
     #endregion
 
     #region Health
 
-    public async Task<IAuthClient.Result<HealthGetResponseModel, HealthGetResponseModel>> GetHealth()
+    public async Task<IAuthClient.Result<HealthGetResponseModel, HealthGetResponseModel>> GetHealthAsync()
     {
         var response = await Client.GetAsync("/Health");
-        return await CreateResult<HealthGetResponseModel, HealthGetResponseModel>(response);
+        return await CreateResultAsync<HealthGetResponseModel, HealthGetResponseModel>(response);
     }
 
     #endregion
 
     #region Helpers
 
-    private async Task<IAuthClient.Result> CreateResult(HttpResponseMessage response)
+    private async Task<IAuthClient.Result> CreateResultAsync(HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();
 
@@ -111,7 +111,7 @@ public class AuthClient : IDisposable
         return IAuthClient.Result.FromError(response.StatusCode, error);
     }
 
-    private async Task<IAuthClient.Result<T>> CreateResult<T>(HttpResponseMessage response) where T : class
+    private async Task<IAuthClient.Result<T>> CreateResultAsync<T>(HttpResponseMessage response) where T : class
     {
         var content = await response.Content.ReadAsStringAsync();
 
@@ -131,7 +131,7 @@ public class AuthClient : IDisposable
         return IAuthClient.Result<T>.FromError(response.StatusCode, error);
     }
 
-    private async Task<IAuthClient.Result<TValue, TError>> CreateResult<TValue, TError>(HttpResponseMessage response)
+    private async Task<IAuthClient.Result<TValue, TError>> CreateResultAsync<TValue, TError>(HttpResponseMessage response)
         where TValue : class
         where TError : class
     {

@@ -23,7 +23,7 @@ public class LoginControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var result = await fixture.Client.PostAuthLogin(request);
+        var result = await fixture.Client.PostAuthLoginAsync(request);
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -31,7 +31,7 @@ public class LoginControllerTests(ClientFixture fixture)
 
         fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {result.Value.AccessToken}");
 
-        var meResult = await fixture.Client.GetUserMe();
+        var meResult = await fixture.Client.GetUserMeAsync();
         meResult.StatusCode.Should().Be(HttpStatusCode.OK);
         meResult.Value.Username.Should().Be(user.Username);
 
@@ -52,7 +52,7 @@ public class LoginControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var result = await fixture.Client.PostAuthLogin(request);
+        var result = await fixture.Client.PostAuthLoginAsync(request);
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -70,7 +70,7 @@ public class LoginControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var result = await fixture.Client.PostAuthLogin(request);
+        var result = await fixture.Client.PostAuthLoginAsync(request);
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);

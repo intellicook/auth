@@ -67,7 +67,7 @@ public class HealthControllerTests
             .ReturnsAsync(report);
 
         // Act
-        var result = await _client.GetHealth();
+        var result = await _client.GetHealthAsync();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -142,7 +142,7 @@ public class HealthControllerTests
             .ReturnsAsync(report);
 
         // Act
-        var result = await _client.GetHealth();
+        var result = await _client.GetHealthAsync();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);

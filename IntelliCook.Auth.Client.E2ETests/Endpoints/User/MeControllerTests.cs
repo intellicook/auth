@@ -18,7 +18,7 @@ public class MeControllerTests(ClientFixture fixture)
         await using var user = await fixture.With(new GivenUser(true));
 
         // Act
-        var result = await fixture.Client.GetUserMe();
+        var result = await fixture.Client.GetUserMeAsync();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -35,7 +35,7 @@ public class MeControllerTests(ClientFixture fixture)
     public async void Get_TokenMissing_ReturnsUnauthorizedResult()
     {
         // Act
-        var result = await fixture.Client.GetUserMe();
+        var result = await fixture.Client.GetUserMeAsync();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -52,12 +52,12 @@ public class MeControllerTests(ClientFixture fixture)
         await using var user = await fixture.With(new GivenUser(true), false);
 
         // Act
-        var result = await fixture.Client.DeleteUserMe();
+        var result = await fixture.Client.DeleteUserMeAsync();
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var meResult = await fixture.Client.GetUserMe();
+        var meResult = await fixture.Client.GetUserMeAsync();
         meResult.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
         fixture.Client.RequestHeaders.Remove("Authorization");
@@ -67,7 +67,7 @@ public class MeControllerTests(ClientFixture fixture)
     public async void Delete_TokenMissing_ReturnsUnauthorizedResult()
     {
         // Act
-        var response = await fixture.Client.DeleteUserMe();
+        var response = await fixture.Client.DeleteUserMeAsync();
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
