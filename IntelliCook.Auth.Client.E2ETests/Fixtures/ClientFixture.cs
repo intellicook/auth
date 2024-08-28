@@ -11,7 +11,7 @@ public class ClientFixture : IDisposable
 {
     public WebApplicationFactory<Program> Factory { get; }
 
-    public AuthClient Client { get; }
+    public AuthClient<AuthOptionsFixture> Client { get; }
 
     public JsonSerializerOptions SerializerOptions { get; } = new()
     {
@@ -28,7 +28,7 @@ public class ClientFixture : IDisposable
         );
 
         Factory = new WebApplicationFactory<Program>();
-        Client = new AuthClient
+        Client = new AuthClient<AuthOptionsFixture>
         {
             Client = Factory.CreateClient()
         };
@@ -41,9 +41,9 @@ public class ClientFixture : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public AuthClient ClientWithWebHostBuilder(Action<IWebHostBuilder> configuration)
+    public AuthClient<AuthOptionsFixture> ClientWithWebHostBuilder(Action<IWebHostBuilder> configuration)
     {
-        return new AuthClient
+        return new AuthClient<AuthOptionsFixture>
         {
             Client = Factory.WithWebHostBuilder(configuration).CreateClient()
         };
