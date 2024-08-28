@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 
 namespace IntelliCook.Auth.Client;
 
-public class AuthClient : IAuthClient, IDisposable
+public class AuthClient<TAuthOptions> : IAuthClient, IDisposable where TAuthOptions : class, IAuthOptions
 {
     public HttpClient Client { get; set; } = new();
 
@@ -37,7 +37,7 @@ public class AuthClient : IAuthClient, IDisposable
     }
 
     [ActivatorUtilitiesConstructor]
-    public AuthClient(IHttpContextAccessor httpContextAccessor, IOptions<IAuthOptions> options)
+    public AuthClient(IHttpContextAccessor httpContextAccessor, IOptions<TAuthOptions> options)
     {
         var auth = httpContextAccessor.HttpContext?.Request.Headers.Authorization;
         if (!StringValues.IsNullOrEmpty(auth.GetValueOrDefault("")))

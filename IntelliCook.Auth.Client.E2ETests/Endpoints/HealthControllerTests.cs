@@ -13,7 +13,7 @@ namespace IntelliCook.Auth.Client.E2ETests.Endpoints;
 [Collection(nameof(ClientFixture))]
 public class HealthControllerTests
 {
-    private readonly AuthClient _client;
+    private readonly AuthClient<AuthOptionsFixture> _client;
     private readonly Mock<HealthCheckService> _healthCheckServiceMock = new();
 
     public HealthControllerTests(ClientFixture fixture)

@@ -5,7 +5,8 @@ namespace IntelliCook.Auth.Client;
 
 public static class AuthService
 {
-    public static void AddAuthClient(this IServiceCollection services, IAuthOptions options)
+    public static void AddAuthClient<TAuthOptions>(this IServiceCollection services, TAuthOptions options)
+        where TAuthOptions : class, IAuthOptions
     {
         if (services.All(x => x.ServiceType != typeof(IHttpContextAccessor)))
         {
@@ -13,11 +14,11 @@ public static class AuthService
         }
 
         services
-            .AddOptions<IAuthOptions>()
+            .AddOptions<TAuthOptions>()
             .Configure(o =>
             {
                 o.BaseUrl = options.BaseUrl;
             });
-        services.AddScoped<IAuthClient, AuthClient>();
+        services.AddScoped<IAuthClient, AuthClient<TAuthOptions>>();
     }
 }
