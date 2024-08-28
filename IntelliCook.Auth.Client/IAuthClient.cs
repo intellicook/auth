@@ -100,12 +100,12 @@ public interface IAuthClient
     /// <summary>
     ///     Logs in a user.
     /// </summary>
-    public Task<Result<LoginPostResponseModel>> PostAuthLogin(LoginPostRequestModel request);
+    public Task<Result<LoginPostResponseModel>> PostAuthLoginAsync(LoginPostRequestModel request);
 
     /// <summary>
     ///     Registers a new user.
     /// </summary>
-    public Task<Result> PostAuthRegister(RegisterPostRequestModel request);
+    public Task<Result> PostAuthRegisterAsync(RegisterPostRequestModel request);
 
     #endregion
 
@@ -114,12 +114,12 @@ public interface IAuthClient
     /// <summary>
     ///     Gets the current user.
     /// </summary>
-    public Task<Result<UserGetResponseModel>> GetUserMe();
+    public Task<Result<UserGetResponseModel>> GetUserMeAsync();
 
     /// <summary>
     ///     Deletes the current user.
     /// </summary>
-    public Task<Result> DeleteUserMe();
+    public Task<Result> DeleteUserMeAsync();
 
     #endregion
 
@@ -128,7 +128,7 @@ public interface IAuthClient
     /// <summary>
     /// Checks the health of Auth and its components.
     /// </summary>
-    public Task<Result<HealthGetResponseModel, HealthGetResponseModel>> GetHealth();
+    public Task<Result<HealthGetResponseModel, HealthGetResponseModel>> GetHealthAsync();
 
     #endregion
 }

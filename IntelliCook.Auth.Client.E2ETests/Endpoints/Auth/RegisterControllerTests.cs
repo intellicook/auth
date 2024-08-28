@@ -23,7 +23,7 @@ public class RegisterControllerTests(ClientFixture fixture)
         };
 
         // Act
-        var result = await fixture.Client.PostAuthRegister(request);
+        var result = await fixture.Client.PostAuthRegisterAsync(request);
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -96,7 +96,7 @@ public class RegisterControllerTests(ClientFixture fixture)
     public async void Post_Invalid_ReturnsBadRequest(RegisterPostRequestModel request, string[] expectedErrors)
     {
         // Act
-        var result = await fixture.Client.PostAuthRegister(request);
+        var result = await fixture.Client.PostAuthRegisterAsync(request);
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
