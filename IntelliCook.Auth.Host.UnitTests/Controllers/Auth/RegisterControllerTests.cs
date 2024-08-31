@@ -81,7 +81,7 @@ public class RegisterControllerTests
                 user.Name == request.Name &&
                 user.UserName == request.Username &&
                 user.Email == request.Email &&
-                user.Role == UserRoleModel.None
+                user.Role == UserRoleModel.User
             ),
             request.Password
         ), Times.Once);

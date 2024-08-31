@@ -17,18 +17,21 @@ public class Startup
         ApiOptions = Configuration.GetAuthOptions<ApiOptions>();
         DatabaseOptions = Configuration.GetAuthOptions<DatabaseOptions>();
         JwtOptions = Configuration.GetAuthOptions<JwtOptions>();
+        AdminOptions = Configuration.GetAuthOptions<AdminOptions>();
     }
 
     private IConfiguration Configuration { get; }
     private ApiOptions ApiOptions { get; }
     private DatabaseOptions DatabaseOptions { get; }
     private JwtOptions JwtOptions { get; }
+    private AdminOptions AdminOptions { get; }
 
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddAuthOptions<DatabaseOptions>(Configuration);
         services.AddAuthOptions<ApiOptions>(Configuration);
         services.AddAuthOptions<JwtOptions>(Configuration);
+        services.AddAuthOptions<AdminOptions>(Configuration);
         services.AddAuthContext(DatabaseOptions);
         services.AddHealthChecks()
             .AddAuthChecks(DatabaseOptions);
@@ -42,13 +45,16 @@ public class Startup
 
     public void Configure(WebApplication app)
     {
-        // Ensure database is created
         using (var scope = app.Services.CreateScope())
         {
             var services = scope.ServiceProvider;
 
+            // Ensure database is created
             var context = services.GetRequiredService<AuthContext>();
             context.Database.EnsureCreated();
+
+            // Seed admin user
+            services.SeedAuthAdminUser();
         }
 
         // Configure the HTTP request pipeline

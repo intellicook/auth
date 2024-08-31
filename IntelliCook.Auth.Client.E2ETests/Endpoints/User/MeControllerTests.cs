@@ -27,7 +27,7 @@ public class MeControllerTests(ClientFixture fixture)
             Name = user.Name,
             Username = user.Username,
             Email = user.Email,
-            Role = UserRoleModel.None
+            Role = UserRoleModel.User
         });
     }
 

@@ -43,7 +43,7 @@ public class RegisterController : ControllerBase
         var user = new IntelliCookUser
         {
             Name = request.Name,
-            Role = UserRoleModel.None
+            Role = UserRoleModel.User
         };
         await _userStore.SetUserNameAsync(user, request.Username, CancellationToken.None);
         await _userEmailStore.SetEmailAsync(user, request.Email, CancellationToken.None);
