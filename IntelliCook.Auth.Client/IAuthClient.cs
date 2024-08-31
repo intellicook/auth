@@ -117,6 +117,16 @@ public interface IAuthClient
     public Task<Result<UserGetResponseModel>> GetUserMeAsync();
 
     /// <summary>
+    ///     Updates the current user.
+    /// </summary>
+    public Task<Result> PutUserMeAsync(UserPutRequestModel request);
+
+    /// <summary>
+    ///     Updates the current user's password.
+    /// </summary>
+    public Task<Result> PutUserMePasswordAsync(UserPasswordPutRequestModel request);
+
+    /// <summary>
     ///     Deletes the current user.
     /// </summary>
     public Task<Result> DeleteUserMeAsync();
