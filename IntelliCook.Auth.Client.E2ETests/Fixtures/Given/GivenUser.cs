@@ -2,6 +2,7 @@ using FluentAssertions;
 using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Contract.Auth.Register;
 using System.Net;
+using System.Text.Json;
 
 namespace IntelliCook.Auth.Client.E2ETests.Fixtures.Given;
 
@@ -42,18 +43,15 @@ public class GivenUser : GivenBase
 
         if (SetAuthorizationHeader)
         {
+            Fixture.Client.RequestHeaders.Remove("Authorization");
             var token = await GetToken();
             Fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {token}");
         }
     }
 
-    protected override async Task Cleanup()
+    public override async Task Cleanup()
     {
-        if (Fixture.Client.RequestHeaders.Authorization != null)
-        {
-            Fixture.Client.RequestHeaders.Remove("Authorization");
-        }
-
+        Fixture.Client.RequestHeaders.Remove("Authorization");
         var token = await GetToken();
         Fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {token}");
 
@@ -74,7 +72,17 @@ public class GivenUser : GivenBase
 
         var response = await Fixture.Client.PostAuthLoginAsync(request);
 
-        response.IsSuccessful.Should().BeTrue();
+        var jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true
+        };
+
+        response.IsSuccessful.Should().BeTrue($"Status {response.StatusCode}: {(response.HasError, response.HasValidationError) switch
+        {
+            (true, true) => JsonSerializer.Serialize(response.ValidationError, jsonOptions),
+            (true, false) => JsonSerializer.Serialize(response.Error, jsonOptions),
+            _ => "No error message"
+        }}");
 
         return response.Value.AccessToken;
     }
