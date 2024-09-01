@@ -25,6 +25,13 @@ public class MeControllerTests
         PasswordHash = "Password Hash"
     };
 
+    private readonly UserPutRequestModel _userPutRequest = new()
+    {
+        Name = "New Name",
+        Username = "New_Username",
+        Email = "New@Email.com"
+    };
+
     public MeControllerTests()
     {
         _userManagerMock = new Mock<UserManager<IntelliCookUser>>(
@@ -141,6 +148,345 @@ public class MeControllerTests
 
         // Assert
         result.Should().BeOfType<NotFoundObjectResult>();
+    }
+
+    #endregion
+
+    #region Put
+
+    [Fact]
+    public async void Put_Success_ReturnsNoContentResult()
+    {
+        // Arrange
+        var newUser = new IntelliCookUser
+        {
+            Name = _userPutRequest.Name,
+            Role = _user.Role,
+            UserName = _userPutRequest.Username,
+            Email = _userPutRequest.Email,
+            PasswordHash = _user.PasswordHash
+        };
+
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+        _userManagerMock
+            .Setup(m => m.FindByNameAsync(_user.Name))
+            .ReturnsAsync(_user);
+        _userManagerMock
+            .Setup(m => m.UpdateAsync(It.Is<IntelliCookUser>(user =>
+                user.Name == newUser.Name &&
+                user.Role == newUser.Role &&
+                user.UserName == newUser.UserName &&
+                user.Email == newUser.Email &&
+                user.PasswordHash == newUser.PasswordHash
+            )))
+            .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        var result = await _meController.Put(_userPutRequest);
+
+        // Assert
+        result.Should().BeOfType<NoContentResult>();
+
+        _userManagerMock.Verify(m => m.UpdateAsync(It.Is<IntelliCookUser>(user =>
+            user.Name == newUser.Name &&
+            user.Role == newUser.Role &&
+            user.UserName == newUser.UserName &&
+            user.Email == newUser.Email &&
+            user.PasswordHash == newUser.PasswordHash
+        )), Times.Once);
+    }
+
+    [Fact]
+    public async void Put_UpdateFailed_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        var newUser = new IntelliCookUser
+        {
+            Name = _userPutRequest.Name,
+            Role = _user.Role,
+            UserName = _userPutRequest.Username,
+            Email = _userPutRequest.Email,
+            PasswordHash = _user.PasswordHash
+        };
+
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+        _userManagerMock
+            .Setup(m => m.FindByNameAsync(_user.Name))
+            .ReturnsAsync(_user);
+        _userManagerMock
+            .Setup(m => m.UpdateAsync(It.Is<IntelliCookUser>(user =>
+                user.Name == newUser.Name &&
+                user.Role == newUser.Role &&
+                user.UserName == newUser.UserName &&
+                user.Email == newUser.Email &&
+                user.PasswordHash == newUser.PasswordHash
+            )))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Error" }));
+
+        // Act
+        var result = await _meController.Put(_userPutRequest);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.UpdateAsync(It.Is<IntelliCookUser>(user =>
+            user.Name == newUser.Name &&
+            user.Role == newUser.Role &&
+            user.UserName == newUser.UserName &&
+            user.Email == newUser.Email &&
+            user.PasswordHash == newUser.PasswordHash
+        )), Times.Once);
+    }
+
+    [Fact]
+    public async void Put_NameNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+
+        // Act
+        var result = await _meController.Put(_userPutRequest);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        _userManagerMock.Verify(m => m.UpdateAsync(It.IsAny<IntelliCookUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async void Put_RoleNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name)
+            });
+
+        // Act
+        var result = await _meController.Put(_userPutRequest);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        _userManagerMock.Verify(m => m.UpdateAsync(It.IsAny<IntelliCookUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async void Put_UserNotFound_ReturnsNotFoundObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+        _userManagerMock
+            .Setup(m => m.FindByNameAsync(_user.Name))
+            .ReturnsAsync(null as IntelliCookUser);
+
+        // Act
+        var result = await _meController.Put(_userPutRequest);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+        _userManagerMock.Verify(m => m.UpdateAsync(It.IsAny<IntelliCookUser>()), Times.Never);
+    }
+
+    #endregion
+
+    #region PutPassword
+
+    [Fact]
+    public async void PutPassword_Success_ReturnsNoContentResult()
+    {
+        // Arrange
+        var request = new UserPasswordPutRequestModel
+        {
+            OldPassword = "OldPassword",
+            NewPassword = "NewPassword"
+        };
+
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+        _userManagerMock
+            .Setup(m => m.FindByNameAsync(_user.Name))
+            .ReturnsAsync(_user);
+        _userManagerMock
+            .Setup(m => m.ChangePasswordAsync(_user, request.OldPassword, request.NewPassword))
+            .ReturnsAsync(IdentityResult.Success);
+
+        // Act
+        var result = await _meController.PutPassword(request);
+
+        // Assert
+        result.Should().BeOfType<NoContentResult>();
+
+        _userManagerMock.Verify(
+            m => m.ChangePasswordAsync(_user, request.OldPassword, request.NewPassword),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async void PutPassword_UpdateFailed_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        var request = new UserPasswordPutRequestModel
+        {
+            OldPassword = "OldPassword",
+            NewPassword = "NewPassword"
+        };
+
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+        _userManagerMock
+            .Setup(m => m.FindByNameAsync(_user.Name))
+            .ReturnsAsync(_user);
+        _userManagerMock
+            .Setup(m => m.ChangePasswordAsync(_user, request.OldPassword, request.NewPassword))
+            .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Error" }));
+
+        // Act
+        var result = await _meController.PutPassword(request);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(
+            m => m.ChangePasswordAsync(_user, request.OldPassword, request.NewPassword),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async void PutPassword_NameNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        var request = new UserPasswordPutRequestModel
+        {
+            OldPassword = "OldPassword",
+            NewPassword = "NewPassword"
+        };
+
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+
+        // Act
+        var result = await _meController.PutPassword(request);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        _userManagerMock.Verify(
+            m => m.ChangePasswordAsync(It.IsAny<IntelliCookUser>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async void PutPassword_RoleNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        var request = new UserPasswordPutRequestModel
+        {
+            OldPassword = "OldPassword",
+            NewPassword = "NewPassword"
+        };
+
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name)
+            });
+
+        // Act
+        var result = await _meController.PutPassword(request);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        _userManagerMock.Verify(
+            m => m.ChangePasswordAsync(It.IsAny<IntelliCookUser>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async void PutPassword_UserNotFound_ReturnsNotFoundObjectResult()
+    {
+        // Arrange
+        var request = new UserPasswordPutRequestModel
+        {
+            OldPassword = "OldPassword",
+            NewPassword = "NewPassword"
+        };
+
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+        _userManagerMock
+            .Setup(m => m.FindByNameAsync(_user.Name))
+            .ReturnsAsync(null as IntelliCookUser);
+
+        // Act
+        var result = await _meController.PutPassword(request);
+
+        // Assert
+        result.Should().BeOfType<NotFoundObjectResult>();
+        _userManagerMock.Verify(
+            m => m.ChangePasswordAsync(It.IsAny<IntelliCookUser>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never
+        );
     }
 
     #endregion

@@ -1,6 +1,8 @@
 using FluentAssertions;
 using IntelliCook.Auth.Client.E2ETests.Fixtures;
+using IntelliCook.Auth.Contract.Auth.Login;
 using IntelliCook.Auth.Contract.Auth.Register;
+using IntelliCook.Auth.Contract.User;
 using System.Net;
 
 namespace IntelliCook.Auth.Client.E2ETests.Endpoints.Auth;
@@ -28,8 +30,29 @@ public class RegisterControllerTests(ClientFixture fixture)
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        // TODO: Add more assertions
-        // TODO: Delete user
+        var loginRequest = new LoginPostRequestModel
+        {
+            Username = request.Username,
+            Password = request.Password
+        };
+        var loginResult = await fixture.Client.PostAuthLoginAsync(loginRequest);
+        loginResult.StatusCode.Should().Be(HttpStatusCode.OK);
+        loginResult.Value.AccessToken.Should().NotBeNullOrEmpty();
+
+        fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {loginResult.Value.AccessToken}");
+
+        var meResult = await fixture.Client.GetUserMeAsync();
+        meResult.StatusCode.Should().Be(HttpStatusCode.OK);
+        meResult.Value.Should().BeEquivalentTo(new UserGetResponseModel
+        {
+            Name = request.Name,
+            Role = UserRoleModel.User,
+            Username = request.Username,
+            Email = request.Email
+        });
+
+        // Cleanup
+        fixture.Client.RequestHeaders.Remove("Authorization");
     }
 
     public static IEnumerable<object[]> Post_Invalid_ReturnsBadRequest_TestData()

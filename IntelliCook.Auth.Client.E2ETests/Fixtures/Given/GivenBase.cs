@@ -4,7 +4,9 @@ public abstract class GivenBase : IDisposable, IAsyncDisposable
 {
     private ClientFixture? _fixture;
 
-    protected ClientFixture Fixture => _fixture ?? throw new InvalidOperationException("GivenBase class must be created with ClientFixture.Given.");
+    protected ClientFixture Fixture => _fixture ??
+                                       throw new InvalidOperationException(
+                                           "GivenBase class must be created with ClientFixture.Given.");
 
     private bool WillCleanup { get; set; } = true;
 
@@ -16,7 +18,7 @@ public abstract class GivenBase : IDisposable, IAsyncDisposable
 
     public abstract Task Init();
 
-    protected virtual Task Cleanup()
+    public virtual Task Cleanup()
     {
         return Task.CompletedTask;
     }

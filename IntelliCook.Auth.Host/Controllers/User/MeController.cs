@@ -52,6 +52,107 @@ public class MeController(UserManager<IntelliCookUser> userManager) : Controller
     }
 
     /// <summary>
+    ///     Updates the current user.
+    /// </summary>
+    [HttpPut]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Put(UserPutRequestModel request)
+    {
+        var name = GetUsername();
+
+        if (name == null)
+        {
+            return BadRequest(this.CreateValidationProblemDetails());
+        }
+
+        var user = await userManager.FindByNameAsync(name);
+
+        if (user == null)
+        {
+            return NotFound(this.CreateProblemDetails(
+                StatusCodes.Status404NotFound,
+                "User not found",
+                detail: "Invalid token with no user found."
+            ));
+        }
+
+        user.Name = request.Name;
+        user.UserName = request.Username;
+        user.Email = request.Email;
+
+        var result = await userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            return NoContent();
+        }
+
+        if (result.Errors.Any(e => e.Code == "DuplicateUserName"))
+        {
+            ModelState.AddModelError(nameof(request.Username), "Username is already taken.");
+        }
+
+        if (result.Errors.Any(e => e.Code == "DuplicateEmail"))
+        {
+            ModelState.AddModelError(nameof(request.Email), "Email is already taken.");
+        }
+
+        foreach (var error in result.Errors.Where(e => e.Code != "DuplicateUserName" && e.Code != "DuplicateEmail"))
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+
+        return BadRequest(this.CreateValidationProblemDetails());
+    }
+
+    /// <summary>
+    ///     Updates the current user's password.
+    /// </summary>
+    [Route("Password")]
+    [HttpPut]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> PutPassword(UserPasswordPutRequestModel request)
+    {
+        var name = GetUsername();
+
+        if (name == null)
+        {
+            return BadRequest(this.CreateValidationProblemDetails());
+        }
+
+        var user = await userManager.FindByNameAsync(name);
+
+        if (user == null)
+        {
+            return NotFound(this.CreateProblemDetails(
+                StatusCodes.Status404NotFound,
+                "User not found",
+                detail: "Invalid token with no user found."
+            ));
+        }
+
+        var result = await userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
+
+        if (result.Succeeded)
+        {
+            return NoContent();
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+
+        return BadRequest(this.CreateValidationProblemDetails());
+    }
+
+    /// <summary>
     ///     Deletes the current user.
     /// </summary>
     [HttpDelete]

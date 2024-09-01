@@ -78,6 +78,18 @@ public class AuthClient<TAuthOptions> : IAuthClient, IDisposable where TAuthOpti
         return await CreateResultAsync<UserGetResponseModel>(response);
     }
 
+    public async Task<IAuthClient.Result> PutUserMeAsync(UserPutRequestModel request)
+    {
+        var response = await Client.PutAsJsonAsync("/User/Me", request, SerializerOptions);
+        return await CreateResultAsync(response);
+    }
+
+    public async Task<IAuthClient.Result> PutUserMePasswordAsync(UserPasswordPutRequestModel request)
+    {
+        var response = await Client.PutAsJsonAsync("/User/Me/Password", request, SerializerOptions);
+        return await CreateResultAsync(response);
+    }
+
     public async Task<IAuthClient.Result> DeleteUserMeAsync()
     {
         var response = await Client.DeleteAsync("/User/Me");
