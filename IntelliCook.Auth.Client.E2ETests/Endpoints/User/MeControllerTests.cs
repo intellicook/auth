@@ -47,7 +47,7 @@ public class MeControllerTests(ClientFixture fixture)
     #region Put
 
     [Fact]
-    public async void Put_Success_ReturnsNoContentResult()
+    public async void Put_Success_ReturnsOkObjectResult()
     {
         // Arrange
         await using var user = await fixture.With(new GivenUser(true), false);
@@ -62,7 +62,8 @@ public class MeControllerTests(ClientFixture fixture)
         var result = await fixture.Client.PutUserMeAsync(request);
 
         // Assert
-        result.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        result.Value.AccessToken.Should().NotBeNullOrEmpty();
 
         var oldMeResult = await fixture.Client.GetUserMeAsync();
         oldMeResult.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -71,7 +72,7 @@ public class MeControllerTests(ClientFixture fixture)
         user.Username = request.Username;
         user.Email = request.Email;
         fixture.Client.RequestHeaders.Remove("Authorization");
-        fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {await user.GetToken()}");
+        fixture.Client.RequestHeaders.Add("Authorization", $"Bearer {result.Value.AccessToken}");
 
         var meResult = await fixture.Client.GetUserMeAsync();
         meResult.StatusCode.Should().Be(HttpStatusCode.OK);

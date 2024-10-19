@@ -119,7 +119,7 @@ public interface IAuthClient
     /// <summary>
     ///     Updates the current user.
     /// </summary>
-    public Task<Result> PutUserMeAsync(UserPutRequestModel request);
+    public Task<Result<UserPutResponseModel>> PutUserMeAsync(UserPutRequestModel request);
 
     /// <summary>
     ///     Updates the current user's password.
