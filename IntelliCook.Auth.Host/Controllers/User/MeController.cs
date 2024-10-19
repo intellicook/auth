@@ -1,9 +1,13 @@
 using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.Extensions;
+using IntelliCook.Auth.Host.Extensions.Infrastructure;
+using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace IntelliCook.Auth.Host.Controllers.User;
@@ -12,7 +16,7 @@ namespace IntelliCook.Auth.Host.Controllers.User;
 [Route("User/[controller]")]
 [ApiController]
 [Authorize]
-public class MeController(UserManager<IntelliCookUser> userManager) : ControllerBase
+public class MeController(UserManager<IntelliCookUser> userManager, IOptions<JwtOptions> jwtOptions) : ControllerBase
 {
     /// <summary>
     ///     Gets the current user.
@@ -55,7 +59,7 @@ public class MeController(UserManager<IntelliCookUser> userManager) : Controller
     ///     Updates the current user.
     /// </summary>
     [HttpPut]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(UserPutResponseModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(void), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -87,7 +91,11 @@ public class MeController(UserManager<IntelliCookUser> userManager) : Controller
 
         if (result.Succeeded)
         {
-            return NoContent();
+            var token = user.CreateToken(jwtOptions.Value);
+            return Ok(new UserPutResponseModel
+            {
+                AccessToken = new JwtSecurityTokenHandler().WriteToken(token)
+            });
         }
 
         if (result.Errors.Any(e => e.Code == "DuplicateUserName"))
@@ -206,6 +214,15 @@ public class MeController(UserManager<IntelliCookUser> userManager) : Controller
             ModelState.AddModelError(nameof(ClaimTypes.Name), "Invalid token with no name is given.");
         }
 
+        var email = User.Claims
+            .SingleOrDefault(c => c.Type == ClaimTypes.Email)?
+            .Value;
+
+        if (email == null)
+        {
+            ModelState.AddModelError(nameof(ClaimTypes.Email), "Invalid token with no email is given.");
+        }
+
         var role = User.Claims
             .SingleOrDefault(c => c.Type == ClaimTypes.Role)?
             .Value;
@@ -215,7 +232,7 @@ public class MeController(UserManager<IntelliCookUser> userManager) : Controller
             ModelState.AddModelError(nameof(ClaimTypes.Role), "Invalid token with no role is given.");
         }
 
-        if (name == null || role == null)
+        if (name == null || email == null || role == null)
         {
             return null;
         }

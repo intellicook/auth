@@ -1,14 +1,12 @@
 using IntelliCook.Auth.Contract.Auth.Login;
+using IntelliCook.Auth.Host.Extensions.Infrastructure;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace IntelliCook.Auth.Host.Controllers.Auth;
 
@@ -32,34 +30,11 @@ public class LoginController(UserManager<IntelliCookUser> userManager, IOptions<
             return Unauthorized();
         }
 
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.Name, user.UserName),
-            new(ClaimTypes.Role, user.Role.ToString()),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-        var token = CreateToken(claims);
+        var token = user.CreateToken(jwtOptions.Value);
 
         return Ok(new LoginPostResponseModel
         {
             AccessToken = new JwtSecurityTokenHandler().WriteToken(token)
         });
-    }
-
-    private JwtSecurityToken CreateToken(IEnumerable<Claim> claims)
-    {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Value.Secret));
-
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha512Signature);
-
-        var token = new JwtSecurityToken(
-            jwtOptions.Value.Issuer,
-            jwtOptions.Value.Audience,
-            claims,
-            signingCredentials: credentials
-        );
-
-        return token;
     }
 }
