@@ -1,11 +1,14 @@
 using FluentAssertions;
 using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.Controllers.User;
+using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Moq;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace IntelliCook.Auth.Host.UnitTests.Controllers.User;
@@ -15,6 +18,12 @@ public class MeControllerTests
     private readonly MeController _meController;
     private readonly Mock<HttpContext> _httpContextMock = new();
     private readonly Mock<UserManager<IntelliCookUser>> _userManagerMock;
+    private readonly IOptions<JwtOptions> _jwtOptions = new OptionsWrapper<JwtOptions>(new JwtOptions
+    {
+        Secret = "This is a secret security key, required to be 512 bits long, so here are some random words.",
+        Issuer = "Issuer",
+        Audience = "Audience"
+    });
 
     private readonly IntelliCookUser _user = new()
     {
@@ -45,7 +54,7 @@ public class MeControllerTests
             null,
             null
         );
-        _meController = new MeController(_userManagerMock.Object)
+        _meController = new MeController(_userManagerMock.Object, _jwtOptions)
         {
             ControllerContext = new ControllerContext
             {
@@ -65,6 +74,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -94,6 +104,29 @@ public class MeControllerTests
             .SetupGet(m => m.User.Claims)
             .Returns(new[]
             {
+                new Claim(ClaimTypes.Email, _user.Email),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+
+        // Act
+        var result = await _meController.Get();
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async void Get_EmailNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
 
@@ -115,7 +148,8 @@ public class MeControllerTests
             .SetupGet(m => m.User.Claims)
             .Returns(new[]
             {
-                new Claim(ClaimTypes.Name, _user.Name)
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email)
             });
 
         // Act
@@ -137,6 +171,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -155,7 +190,7 @@ public class MeControllerTests
     #region Put
 
     [Fact]
-    public async void Put_Success_ReturnsNoContentResult()
+    public async void Put_Success_ReturnsOkObjectResult()
     {
         // Arrange
         var newUser = new IntelliCookUser
@@ -172,6 +207,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -191,7 +227,20 @@ public class MeControllerTests
         var result = await _meController.Put(_userPutRequest);
 
         // Assert
-        result.Should().BeOfType<NoContentResult>();
+        var token = result.Should().BeOfType<OkObjectResult>().Which
+            .Value.Should().BeOfType<UserPutResponseModel>().Which
+            .AccessToken;
+
+        var securityToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+        securityToken.Claims
+            .SingleOrDefault(c => c.Type == ClaimTypes.Name)?
+            .Value.Should().Be(_user.UserName);
+        securityToken.Claims
+            .SingleOrDefault(c => c.Type == ClaimTypes.Email)?
+            .Value.Should().Be(_user.Email);
+        securityToken.Claims
+            .SingleOrDefault(c => c.Type == ClaimTypes.Role)?
+            .Value.Should().Be(_user.Role.ToString());
 
         _userManagerMock.Verify(m => m.UpdateAsync(It.Is<IntelliCookUser>(user =>
             user.Name == newUser.Name &&
@@ -220,6 +269,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -259,6 +309,30 @@ public class MeControllerTests
             .SetupGet(m => m.User.Claims)
             .Returns(new[]
             {
+                new Claim(ClaimTypes.Email, _user.Email),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+
+        // Act
+        var result = await _meController.Put(_userPutRequest);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        _userManagerMock.Verify(m => m.UpdateAsync(It.IsAny<IntelliCookUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async void Put_EmailNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
 
@@ -281,7 +355,8 @@ public class MeControllerTests
             .SetupGet(m => m.User.Claims)
             .Returns(new[]
             {
-                new Claim(ClaimTypes.Name, _user.Name)
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email)
             });
 
         // Act
@@ -304,6 +379,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -337,6 +413,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -373,6 +450,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -409,6 +487,39 @@ public class MeControllerTests
             .SetupGet(m => m.User.Claims)
             .Returns(new[]
             {
+                new Claim(ClaimTypes.Email, _user.Email),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+
+        // Act
+        var result = await _meController.PutPassword(request);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        _userManagerMock.Verify(
+            m => m.ChangePasswordAsync(It.IsAny<IntelliCookUser>(), It.IsAny<string>(), It.IsAny<string>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async void PutPassword_EmailNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        var request = new UserPasswordPutRequestModel
+        {
+            OldPassword = "OldPassword",
+            NewPassword = "NewPassword"
+        };
+
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
 
@@ -440,7 +551,8 @@ public class MeControllerTests
             .SetupGet(m => m.User.Claims)
             .Returns(new[]
             {
-                new Claim(ClaimTypes.Name, _user.Name)
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email)
             });
 
         // Act
@@ -472,6 +584,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -502,6 +615,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -529,6 +643,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock
@@ -556,6 +671,30 @@ public class MeControllerTests
             .SetupGet(m => m.User.Claims)
             .Returns(new[]
             {
+                new Claim(ClaimTypes.Email, _user.Email),
+                new Claim(ClaimTypes.Role, _user.Role.ToString())
+            });
+
+        // Act
+        var result = await _meController.Get();
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>().Which
+            .Value.Should().BeOfType<ValidationProblemDetails>();
+
+        _userManagerMock.Verify(m => m.FindByNameAsync(It.IsAny<string>()), Times.Never);
+        _userManagerMock.Verify(m => m.DeleteAsync(It.IsAny<IntelliCookUser>()), Times.Never);
+    }
+
+    [Fact]
+    public async void Post_EmailNotFound_ReturnsBadRequestObjectResult()
+    {
+        // Arrange
+        _httpContextMock
+            .SetupGet(m => m.User.Claims)
+            .Returns(new[]
+            {
+                new Claim(ClaimTypes.Name, _user.Name),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
 
@@ -578,7 +717,8 @@ public class MeControllerTests
             .SetupGet(m => m.User.Claims)
             .Returns(new[]
             {
-                new Claim(ClaimTypes.Name, _user.Name)
+                new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email)
             });
 
         // Act
@@ -601,6 +741,7 @@ public class MeControllerTests
             .Returns(new[]
             {
                 new Claim(ClaimTypes.Name, _user.Name),
+                new Claim(ClaimTypes.Email, _user.Email),
                 new Claim(ClaimTypes.Role, _user.Role.ToString())
             });
         _userManagerMock

@@ -81,6 +81,9 @@ public class LoginControllerTests
             .SingleOrDefault(c => c.Type == ClaimTypes.Name)?
             .Value.Should().Be(_user.UserName);
         securityToken.Claims
+            .SingleOrDefault(c => c.Type == ClaimTypes.Email)?
+            .Value.Should().Be(_user.Email);
+        securityToken.Claims
             .SingleOrDefault(c => c.Type == ClaimTypes.Role)?
             .Value.Should().Be(_user.Role.ToString());
     }
