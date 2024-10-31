@@ -1,0 +1,31 @@
+﻿services:
+  api:
+    image: intellicook.auth.host
+    build:
+      context: .
+      dockerfile: IntelliCook.Auth.Host/Dockerfile
+    ports:
+      - 2503:8080
+      - 2504:8081
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    volumes:
+      - mssql_data:/var/opt/mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${Database__Password}
+    ports:
+      - ${Database__Port}:1433
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${Database__Password} -C -Q 'SELECT 1' || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mssql_data:

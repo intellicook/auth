@@ -2,6 +2,7 @@ using IntelliCook.Auth.Host.Extensions;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Contexts;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text.Json.Serialization;
@@ -51,7 +52,7 @@ public class Startup
 
             // Ensure database is created
             var context = services.GetRequiredService<AuthContext>();
-            context.Database.EnsureCreated();
+            context.Database.Migrate();
 
             // Seed admin user
             services.SeedAuthAdminUser();
