@@ -30,7 +30,7 @@ public static class AuthServiceCollectionExtensions
         return serviceCollection.AddDbContext<AuthContext>(options.UseInMemory switch
         {
             true => o => o.UseInMemoryDatabase(options.Name),
-            _ => o => o.UseSqlServer(options.ConnectionString)
+            _ => o => o.UseSqlServer(options.GetConnectionString())
         });
     }
 
