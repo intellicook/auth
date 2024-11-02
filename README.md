@@ -56,6 +56,17 @@ The service uses [ASP.NET Core](https://dotnet.microsoft.com/en-us/apps/aspnet) 
 
     - Use In-Memory Database, which is easier to set up and use for development. To enable it, the `Database__UseInMemory` environment variable or `Database:UseInMemory` variable in [IntelliCook.Auth.Host/appsettings.json](IntelliCook.Auth.Host/appsettings.json) have to be set to `true`, which should already be done for you in the "Http/Https In Memory Database" configurations in the [IntelliCook.Auth.Host/Properties/launchSettings.json](IntelliCook.Auth.Host/Properties/launchSettings.json) file.
 
+## Docker
+
+Apart from running directly on the host machine (which is not recommended because you need to find a way to set up an SQL server at `localhost:2603`), you can run it in [Docker](https://www.docker.com) and [Docker Compose](https://docs.docker.com/compose).
+
+Before starting anything, you have to define the environment variables in the `.env` file. You can copy the `.env.example` file.
+```bash
+cp .env.example .env
+```
+
+It is not recommended to change anything in the `.env` file, it should work out of the box.
+
 ## Making Code Changes
 
 Important things to note when making code changes:
