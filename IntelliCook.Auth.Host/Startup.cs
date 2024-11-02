@@ -50,9 +50,16 @@ public class Startup
         {
             var services = scope.ServiceProvider;
 
-            // Ensure database is created
+            // Ensure database is created and updated
             var context = services.GetRequiredService<AuthContext>();
-            context.Database.Migrate();
+            if (DatabaseOptions.UseInMemory)
+            {
+                context.Database.EnsureCreated();
+            }
+            else
+            {
+                context.Database.Migrate();
+            }
 
             // Seed admin user
             services.SeedAuthAdminUser();
