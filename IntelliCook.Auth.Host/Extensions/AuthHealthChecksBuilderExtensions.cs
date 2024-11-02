@@ -15,7 +15,7 @@ public static class AuthHealthChecksBuilderExtensions
             true => healthChecksBuilder
                 .AddDbContextCheck<AuthContext>(),
             _ => healthChecksBuilder
-                .AddSqlServer(options.ConnectionString!, name: "SqlServer")
+                .AddSqlServer(options.GetConnectionString(), name: "SqlServer")
                 .AddDbContextCheck<AuthContext>()
         };
     }

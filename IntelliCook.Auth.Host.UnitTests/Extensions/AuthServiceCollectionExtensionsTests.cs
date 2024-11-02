@@ -119,8 +119,9 @@ public class AuthServiceCollectionExtensionsTests
         var options = new DatabaseOptions
         {
             Name = "Test",
+            Host = "Test Host",
+            Password = "Test Password",
             UseInMemory = false,
-            ConnectionString = "TestConnectionString"
         };
 
         // Act
