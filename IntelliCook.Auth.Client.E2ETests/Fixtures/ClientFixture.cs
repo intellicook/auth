@@ -9,6 +9,14 @@ namespace IntelliCook.Auth.Client.E2ETests.Fixtures;
 
 public class ClientFixture : IDisposable
 {
+    public const string AdminName = "Admin";
+
+    public const string AdminEmail = "Admin@Example.com";
+
+    public const string AdminUsername = "admin";
+
+    public const string AdminPassword = "Password123!";
+
     public WebApplicationFactory<Program> Factory { get; }
 
     public AuthClient<AuthOptionsFixture> Client { get; }
@@ -25,6 +33,22 @@ public class ClientFixture : IDisposable
         Environment.SetEnvironmentVariable(
             $"{DatabaseOptions.SectionKey}:{nameof(DatabaseOptions.UseInMemory)}",
             "true"
+        );
+        Environment.SetEnvironmentVariable(
+            $"{AdminOptions.SectionKey}:{nameof(AdminOptions.Name)}",
+            AdminName
+        );
+        Environment.SetEnvironmentVariable(
+            $"{AdminOptions.SectionKey}:{nameof(AdminOptions.Email)}",
+            AdminEmail
+        );
+        Environment.SetEnvironmentVariable(
+            $"{AdminOptions.SectionKey}:{nameof(AdminOptions.Username)}",
+            AdminUsername
+        );
+        Environment.SetEnvironmentVariable(
+            $"{AdminOptions.SectionKey}:{nameof(AdminOptions.Password)}",
+            AdminPassword
         );
 
         Factory = new WebApplicationFactory<Program>();
