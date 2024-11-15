@@ -1,3 +1,4 @@
+using IntelliCook.Auth.Contract.User;
 using IntelliCook.Auth.Host.Options;
 using IntelliCook.Auth.Infrastructure.Contexts;
 using IntelliCook.Auth.Infrastructure.Models;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 
 namespace IntelliCook.Auth.Host.Extensions;
@@ -14,20 +16,20 @@ namespace IntelliCook.Auth.Host.Extensions;
 public static class AuthServiceCollectionExtensions
 {
     public static IServiceCollection AddAuthOptions<TOptions>(
-        this IServiceCollection serviceCollection,
+        this IServiceCollection services,
         IConfiguration configuration
     ) where
         TOptions : class, IAuthOptions
     {
-        return serviceCollection.Configure<TOptions>(configuration.GetValidatedSection<TOptions>());
+        return services.Configure<TOptions>(configuration.GetValidatedSection<TOptions>());
     }
 
     public static IServiceCollection AddAuthContext(
-        this IServiceCollection serviceCollection,
+        this IServiceCollection services,
         DatabaseOptions options
     )
     {
-        return serviceCollection.AddDbContext<AuthContext>(options.UseInMemory switch
+        return services.AddDbContext<AuthContext>(options.UseInMemory switch
         {
             true => o => o.UseInMemoryDatabase(options.Name),
             _ => o => o.UseSqlServer(options.GetConnectionString())
@@ -35,11 +37,11 @@ public static class AuthServiceCollectionExtensions
     }
 
     public static IServiceCollection AddAuthSwagger(
-        this IServiceCollection serviceCollection,
+        this IServiceCollection services,
         ApiOptions apiOptions
     )
     {
-        return serviceCollection
+        return services
             .AddEndpointsApiExplorer()
             .AddSwaggerGen(o =>
             {
@@ -81,11 +83,11 @@ public static class AuthServiceCollectionExtensions
     }
 
     public static IServiceCollection AddAuthJwtAuthentication(
-        this IServiceCollection serviceCollection,
+        this IServiceCollection services,
         JwtOptions jwtOptions
     )
     {
-        serviceCollection.AddAuthentication(o =>
+        services.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -112,13 +114,16 @@ public static class AuthServiceCollectionExtensions
                 };
             });
 
-        return serviceCollection;
+        return services;
     }
 
-    public static IServiceCollection AddAuthIdentity(this IServiceCollection serviceCollection)
+    public static IServiceCollection AddAuthIdentity(this IServiceCollection services)
     {
-        serviceCollection.AddAuthorization();
-        serviceCollection.AddIdentity<IntelliCookUser, IdentityRole>(o =>
+        services.AddAuthorization(o =>
+        {
+            o.AddPolicy("Admin", p => p.RequireClaim(ClaimTypes.Role, UserRoleModel.Admin.ToString()));
+        });
+        services.AddIdentity<IntelliCookUser, IdentityRole>(o =>
             {
                 o.Password.RequireDigit = true;
                 o.Password.RequireLowercase = true;
@@ -137,6 +142,6 @@ public static class AuthServiceCollectionExtensions
             .AddEntityFrameworkStores<AuthContext>()
             .AddDefaultTokenProviders();
 
-        return serviceCollection;
+        return services;
     }
 }

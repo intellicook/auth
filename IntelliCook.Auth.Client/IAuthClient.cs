@@ -95,6 +95,15 @@ public interface IAuthClient
         }
     }
 
+    #region Admin
+
+    /// <summary>
+    ///     Gets a list of all users.
+    /// </summary>
+    public Task<Result<IEnumerable<UserGetResponseModel>>> GetAdminUsersAsync();
+
+    #endregion
+
     #region Auth
 
     /// <summary>

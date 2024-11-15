@@ -54,6 +54,16 @@ public class AuthClient<TAuthOptions> : IAuthClient, IDisposable where TAuthOpti
         GC.SuppressFinalize(this);
     }
 
+    #region Admin
+
+    public async Task<IAuthClient.Result<IEnumerable<UserGetResponseModel>>> GetAdminUsersAsync()
+    {
+        var response = await Client.GetAsync("/Admin/Users");
+        return await CreateResultAsync<IEnumerable<UserGetResponseModel>>(response);
+    }
+
+    #endregion
+
     #region Auth
 
     public async Task<IAuthClient.Result<LoginPostResponseModel>> PostAuthLoginAsync(LoginPostRequestModel request)

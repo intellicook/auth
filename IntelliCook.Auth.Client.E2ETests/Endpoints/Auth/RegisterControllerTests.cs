@@ -52,6 +52,8 @@ public class RegisterControllerTests(ClientFixture fixture)
         });
 
         // Cleanup
+        var deleteResult = await fixture.Client.DeleteUserMeAsync();
+        deleteResult.StatusCode.Should().Be(HttpStatusCode.NoContent);
         fixture.Client.RequestHeaders.Remove("Authorization");
     }
 
