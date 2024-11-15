@@ -29,3 +29,4 @@
 
 volumes:
   mssql_data:
+    name: mssql_data
